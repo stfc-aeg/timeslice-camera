@@ -1,5 +1,6 @@
 import socket
 import os
+import logging
 
 import tornado.gen
 import tornado.iostream
@@ -48,7 +49,7 @@ class CameraTcpConnection(object):
         yield self.dispatch_client()
 
     def log(self, msg, *args, **kwargs):
-        print('[connection %d] %s' % (self.id, msg.format(*args, **kwargs)))
+        logging.debug('[connection %d] %s' % (self.id, msg.format(*args, **kwargs)))
 
 
 class ControlTcpServer(tornado.tcpserver.TCPServer):

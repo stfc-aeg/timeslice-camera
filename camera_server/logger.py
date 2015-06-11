@@ -3,21 +3,20 @@ import sys
 
 logger_name = 'default'
 
-def setup_logger(name):
+def setup_logger(name, level):
 
     global logger_name
     logger_name = name
 
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(getattr(logging, level.upper()))
 
     # create console handler and set level to debug
     ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(getattr(logging, level.upper()))
 
     # create formatter
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s - %(message)s')
-
+    formatter = logging.Formatter('[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d] %(message)s')
     # add formatter to ch
     ch.setFormatter(formatter)
 

@@ -1,18 +1,24 @@
 import app.control_web_server
 import app.control_mcast_client
 import app.control_tcp_server
+import logging
 
 import tornado.ioloop
+import tornado.options
 
 def main():
 
-    # Craete a multicast client for communication with cameras
+    tornado.options.parse_command_line()
 
+    # Create a custom logger
+    #logger = app.logger.setup_logger('control_server')
+
+    # Craete a multicast client for communication with cameras
     mcast_group = '224.1.1.1'
     mcast_port  = 5007
     control_mcast_client = app.control_mcast_client.ControlMcastClient(mcast_group, mcast_port)
-    
-    print("Camera control multicat client created on %s:%d..." % (mcast_group, mcast_port))
+
+    logging.info("Camera control multicat client created on %s:%d..." % (mcast_group, mcast_port))
 
     # Launch the Web server app for the control UI
     web_host = '0.0.0.0'
@@ -20,7 +26,7 @@ def main():
     control_web_server = app.control_web_server.CameraWebServer(control_mcast_client)
     control_web_server.listen(web_port, web_host)
 
-    print("Web server listening on %s:%d" % (web_host, web_port))
+    logging.info("Web server listening on %s:%d" % (web_host, web_port))
 
     # Launch the control TCP server for receving data from the cameras
     tcp_host = '0.0.0.0'
@@ -28,9 +34,9 @@ def main():
     control_ = app.control_tcp_server.ControlTcpServer()
     control_.listen(tcp_port, tcp_host)
 
-    print("Camera control server listening on %s:%d..." % (tcp_host, tcp_port))
+    logging.info("Camera control server listening on %s:%d..." % (tcp_host, tcp_port))
 
-    # infinite loop
+    # Enter IO processing loop
     tornado.ioloop.IOLoop.instance().start()
 
 

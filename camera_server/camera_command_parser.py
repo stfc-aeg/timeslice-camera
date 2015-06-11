@@ -3,7 +3,7 @@ import logger
 
 class CameraCommandParser(object):
 
-    def __init__(self, camera):
+    def __init__(self, server):
 
         # Define dictionary of legal commands and assoicated methods
         self.commands = { 'CONNECT'    : self.connect_cmd,
@@ -14,7 +14,7 @@ class CameraCommandParser(object):
                           'GET'        : self.get_cmd,
                         }
 
-        self.camera = camera
+        self.server = server
 
         self.logger = logger.get_logger()
 
@@ -23,6 +23,8 @@ class CameraCommandParser(object):
         Command parser - takes a line of space-separated data and parses it
         into a command and associated parameter arguments
         """
+
+        cmd_ok = True
 
         # Split data into space separated list
         cmd_words = string.split(cmd_data)
@@ -38,8 +40,24 @@ class CameraCommandParser(object):
             try:
                 args = dict(item.split("=") for item in cmd_words[1:])
 
-                # Pass arguments to command method
-                cmd_ok = self.commands[command](args)
+                if 'id' in args:
+
+                    try:
+                        id = int(args['id'])
+                        print id
+                        if id == 0 or id == self.server.id:
+
+                            # Pass arguments to command method
+                            cmd_ok = self.commands[command](args)
+
+                    except ValueError:
+                        cmd_ok = False
+                        self.logger.error("Non-integer ID parameter specified on command: {}".format(args['id']))
+
+
+                else:
+                    cmd_ok = False
+                    self.logger.error("No ID parameter present in command")
 
             except ValueError:
                 cmd_ok = False
@@ -64,7 +82,7 @@ class CameraCommandParser(object):
         return True
 
     def ping_cmd(self, args):
-        self.logger.debug("Ping command")
+        self.logger.debug("Ping command, args={}".format(args))
         return True
 
     def capture_cmd(self, args):

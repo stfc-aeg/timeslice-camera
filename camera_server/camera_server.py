@@ -10,6 +10,7 @@ import argparse
 
 import logger
 import camera_command_parser
+import control_connection
 import simulated_camera
 
 MCAST_GRP = '224.1.1.1'
@@ -42,7 +43,7 @@ class CameraServer(SocketServer.UDPServer):
         self.camera = camera
         self.id = args.id
 
-        self.command_parser = camera_command_parser.CameraCommandParser(self.camera)
+        self.command_parser = camera_command_parser.CameraCommandParser(self)
 
         self.socket = socket.socket(
             socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -52,6 +53,8 @@ class CameraServer(SocketServer.UDPServer):
             socket.inet_aton(args.mcast_group), socket.INADDR_ANY)
         self.socket.setsockopt(
             socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+        self.control_connection = control_connection.ControlConnection()
 
         self.logger.info("Camera server starting up with ID {}".format(self.id))
 
@@ -78,6 +81,10 @@ def parse_args():
                         help="Multicast port for camera server to bind to")
     parser.add_argument("--simulate", action="store_true", dest="simulate",
                         help="Use simulated camera bindings (debug feature)")
+    parser.add_argument("--logging", action="store", default='info',
+                        #metavar="debug|info|warning|error|none",
+                        choices=['debug', 'info', 'warning', 'error', 'none'],
+                        help="Set the logging level")
     return parser.parse_args()
 
 def main():
@@ -86,12 +93,13 @@ def main():
     args = parse_args()
 
     # Set up a customelogger
-    logger.setup_logger('camera_server')
+    logger.setup_logger('camera_server', args.logging)
 
     if args.simulate:
         camera_type = simulated_camera.SimulatedCamera
     else:
-        camera_type = Camera
+        import picamera
+        camera_type = ipcamera.PiCamera
 
     with camera_type() as camera:
         server = CameraServer(camera, args)

@@ -5,6 +5,8 @@ import tornado.gen
 import tornado.web
 import tornado.ioloop
 
+import logging
+
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -35,7 +37,7 @@ class MonitorHandler(tornado.web.RequestHandler):
     def post(self):
         enabled = self.get_query_argument('enable', default=0)
         self.application.state_monitor_enable = True if enabled == '1' else False
-        print("Setting camera state monitor enable to {}".format(self.application.state_monitor_enable))
+        logging.info("Setting camera state monitor enable to {}".format(self.application.state_monitor_enable))
 
 class CameraWebServer(object):
 
@@ -51,6 +53,7 @@ class CameraWebServer(object):
             (r"/connect", ConnectHandler),
             (r"/monitor", MonitorHandler),
         ], **settings)
+
 
         self.application.control_mcast_client = control_mcast_client
         self.application.state_monitor_enable = False
@@ -68,9 +71,5 @@ class CameraWebServer(object):
     def state_monitor_callback(self):
 
         if self.application.state_monitor_enable:
-            print("State monitor running")
-            self.application.control_mcast_client.send("ping ids=0 host=127.0.0.1 port=8008")
-
-def state_monitor_callback():
-
-    print("State monitor running")
+            logging.debug("State monitor running")
+            self.application.control_mcast_client.send("ping id=0 host=127.0.0.1 port=8008")

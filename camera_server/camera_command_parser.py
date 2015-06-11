@@ -1,4 +1,5 @@
 import string
+import logger
 
 class CameraCommandParser(object):
 
@@ -14,6 +15,8 @@ class CameraCommandParser(object):
                         }
 
         self.camera = camera
+
+        self.logger = logger.get_logger()
 
     def parse_command(self, cmd_data):
         """
@@ -40,38 +43,38 @@ class CameraCommandParser(object):
 
             except ValueError:
                 cmd_ok = False
-                print("Illegal parameter format: {}".format(cmd_data))
+                self.logger.error("Illegal parameter format: {}".format(cmd_data))
 
         else:
             cmd_ok = False
-            print("Unrecognised command : {}".format(command))
+            self.logger.error("Unrecognised command : {}".format(command))
 
         # Format response depending on success of command
         if not cmd_ok:
-            print("Command failed")
+            self.logger.error("Command failed")
 
         return cmd_ok
 
     def connect_cmd(self, args):
-        print("Connect command")
+        self.logger.debug("Connect command")
         return True
 
     def disconnect_cmd(self, args):
-        print("Disconnect command")
+        self.logger.debug("Disconnect command")
         return True
 
     def ping_cmd(self, args):
-        print("Ping command")
+        self.logger.debug("Ping command")
         return True
 
     def capture_cmd(self, args):
-        print("Capture command")
+        self.logger.debug("Capture command")
         return True
 
     def set_cmd(self, args):
-        print("Set command")
+        self.logger.debug("Set command")
         return True
 
     def get_cmd(self, args):
-        print("Get command")
+        self.logger.debug("Get command")
         return True

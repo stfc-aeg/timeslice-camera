@@ -8,35 +8,27 @@ import sched
 import os
 import argparse
 
+import logger
 import camera_command_parser
+import simulated_camera
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
 
-class CameraSim(object):
-
-    def __init__(self):
-        print "Using simulated camera object"
-
-    def __enter__(self):
-        print "CameraSim __enter__()", self
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print "CameraSim __exit__"
-
-
 class Camera(object):
 
     def __init__(self):
-        print "Using real camera object"
+
+        self.logger = logger.get_logger()
+
+        self.logger.debug("Using real camera object")
 
     def __enter__(self):
-        print "Camera __enter__()", self
+        self.logger.debug("Camera __enter__()", self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print "Camera __exit__"
+        self.logger.debug("Camera __exit__")
 
 #class CameraServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
 class CameraServer(SocketServer.UDPServer):
@@ -44,6 +36,8 @@ class CameraServer(SocketServer.UDPServer):
     def __init__(self, camera, args):
 
         SocketServer.UDPServer.__init__(self, ("", 0), UDPHandler)
+
+        self.logger = logger.get_logger()
 
         self.camera = camera
         self.id = args.id
@@ -59,7 +53,7 @@ class CameraServer(SocketServer.UDPServer):
         self.socket.setsockopt(
             socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-        print("Camera server starting up with ID {}".format(self.id))
+        self.logger.info("Camera server starting up with ID {}".format(self.id))
 
 class UDPHandler(SocketServer.BaseRequestHandler):
 
@@ -67,13 +61,14 @@ class UDPHandler(SocketServer.BaseRequestHandler):
         data = self.request[0].strip()
         socket = self.request[1]
         cur_thread = threading.current_thread()
-        print "{} : {} wrote: {}".format(cur_thread.name, self.client_address[0], data)
+        self.server.logger.debug("{} wrote: {}".format(self.client_address[0], data))
 
         self.server.command_parser.parse_command(data)
 
-if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description="Timeslice camera simulator")
+def parse_args():
+
+    parser = argparse.ArgumentParser(description="Timeslice camera server")
 
     parser.add_argument('--id', action="store", dest="id", type=int, default=0,
                         help="Camera ID")
@@ -83,13 +78,25 @@ if __name__ == '__main__':
                         help="Multicast port for camera server to bind to")
     parser.add_argument("--simulate", action="store_true", dest="simulate",
                         help="Use simulated camera bindings (debug feature)")
-    args = parser.parse_args()
+    return parser.parse_args()
+
+def main():
+
+    # Parse arguments
+    args = parse_args()
+
+    # Set up a customelogger
+    logger.setup_logger('camera_server')
 
     if args.simulate:
-        camera_type = CameraSim
+        camera_type = simulated_camera.SimulatedCamera
     else:
         camera_type = Camera
 
     with camera_type() as camera:
         server = CameraServer(camera, args)
         server.serve_forever()
+
+if __name__ == '__main__':
+
+    main()

@@ -46,13 +46,24 @@
 
       <div class="starter-template">
         <h1>Timeslice Camera</h1>
-        <p class="lead">Press the Capture button!</p>
-        <button type="button" id="myButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
-            Capture
-        </button>
-        <div id="capture-state">
-            <p><span>&nbsp;</span></p>
-        </div>
+
+        <div id="connect">
+            <button type="button" id="connectButton" data-loading-text="Connecting..." class="btn btn-primary btn-lg" autocomplete="off">
+                Connect
+            </button>
+            <div id="connect-state">
+                <p><span>&nbsp;</span></p>
+            </div>
+        </div><!-- /.connect -->
+
+        <div id="capture">
+            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
+                Capture
+            </button>
+            <div id="capture-state">
+                <p><span>&nbsp;</span></p>
+            </div>
+        </div><!-- /.capture -->
       </div>
 
     </div><!-- /.container -->
@@ -62,24 +73,7 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/static/js/jquery-2.1.4/jquery.min.js"></script>
     <script src="/static/js/bootstrap/js/bootstrap.min.js"></script>
-    <script type="text/javascript">
-        //$('#myButton').button();
-
-        $('#myButton').click(function() {
-
-            $(this).button('loading');
-            $('#capture-state span').html('')
-
-            $.get('/capture', function(data) {
-                //alert(data);
-                $('#capture-state span').html(data)
-                $('#myButton').button('reset');
-            });
-
-            //setTimeout(function() { $('#myButton').button('reset');}, 2000);
-        });
-
-    </script>
+    <script src="/static/js/camera_control.js" type="text/javascript"></script>
 
 
   </body>

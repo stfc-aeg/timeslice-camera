@@ -14,9 +14,9 @@ class MainHandler(tornado.web.RequestHandler):
 class CaptureHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.application.control_mcast_client.send("Capture!!!")
+        self.application.control_mcast_client.send("capture test=1")
         time.sleep(2.0)
-        self.write("Woo-hoo!!")
+        self.write("Capture complete!")
 
 class CameraWebServer(object):
 

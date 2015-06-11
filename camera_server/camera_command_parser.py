@@ -1,6 +1,25 @@
 import string
 import logger
 
+class hasRequiredParams(object):
+
+    def __init__(self, required_params):
+
+        self.required_params = required_params
+
+    def __call__(self, func):
+
+        def wrapped_func(*args):
+            cmd_ok = True
+            for param in self.required_params:
+                if param not in args[1]:
+                    cmd_ok = False
+                    logger.get_logger().error("{} missing required parameter: {}".format(func.__name__, param))
+            if cmd_ok:
+                cmd_ok = func(*args)
+            return cmd_ok
+        return wrapped_func
+
 class CameraCommandParser(object):
 
     def __init__(self, server):
@@ -43,8 +62,10 @@ class CameraCommandParser(object):
                 if 'id' in args:
 
                     try:
+                        # Decode the id parameter and only run the command if it is intended for
+                        # this camera node or for all (id=0)
                         id = int(args['id'])
-                        print id
+
                         if id == 0 or id == self.server.id:
 
                             # Pass arguments to command method
@@ -81,9 +102,18 @@ class CameraCommandParser(object):
         self.logger.debug("Disconnect command")
         return True
 
+    @hasRequiredParams(['host', 'port'])
     def ping_cmd(self, args):
+
+        cmd_ok = True
         self.logger.debug("Ping command, args={}".format(args))
-        return True
+
+        host = args['host']
+        port = int(args['port'])
+        if not self.server.control_connection.is_connected():
+            self.server.control_connection.connect(host, port)
+
+        return cmd_ok
 
     def capture_cmd(self, args):
         self.logger.debug("Capture command")

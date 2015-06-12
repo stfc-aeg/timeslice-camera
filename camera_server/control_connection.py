@@ -33,7 +33,6 @@ class ControlConnection(object):
             self.socket.sendall(data)
         except socket.error, e:
            if isinstance(e.args, tuple):
-               print "errno is %d" % e[0]
                if e[0] == errno.EPIPE:
                    # remote peer disconnected
                    self.logger.info("Control server connection closed by peer")

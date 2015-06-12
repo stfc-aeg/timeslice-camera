@@ -50,20 +50,20 @@
       <div class="starter-template">
         <h1>Timeslice Camera</h1>
 
-        <div id="connect">
-            <button type="button" id="connectButton" data-loading-text="Connecting..." class="btn btn-primary btn-lg" autocomplete="off">
-                Connect
-            </button>
-            <div id="connect-state">
-                <p><span>&nbsp;</span></p>
-            </div>
-        </div><!-- /.connect -->
-
         <div class="checkbox">
             <label>
-                Enable periodic monitoring of cameras:
-                <input type="checkbox" name="monitor-enable-checkbox">
+                Monitor cameras:
+                <input type="checkbox" name="monitor-enable-checkbox" data-size="mini">
             </label>
+            <div id="camera-state">
+                <h3>Camera State</h3>
+                <!-- This div is populated dynamically by JS -->
+            </div><br>
+            <label>Camera enable:</label>
+            <div class="btn-group" role="group">
+                <button id="camera-enable-all"  class="btn btn-primary">All</button>
+                <button id="camera-enable-none" class="btn btn-primary">None</button>
+            </div>
         </div>
         <div id="capture">
             <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">

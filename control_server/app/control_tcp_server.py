@@ -9,11 +9,13 @@ import tornado.tcpserver
 class CameraTcpConnection(object):
     client_id = 0
 
-    def __init__(self, stream):
-        #super().__init__()
+    def __init__(self, stream, camera_controller):
+
+        self.stream = stream
+        self.camera_controller = camera_controller
+
         CameraTcpConnection.client_id += 1
         self.id = CameraTcpConnection.client_id
-        self.stream = stream
 
         self.stream.socket.setsockopt(
             socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -32,7 +34,9 @@ class CameraTcpConnection(object):
         try:
             while True:
                 line = yield self.stream.read_until(b'\n')
-                self.log('got |%s|' % line.decode('utf-8').strip())
+                response = line.strip()
+                self.log('got |%s|' % response)
+                self.camera_controller.process_camera_response(response)
                 #yield self.stream.write(line)
         except tornado.iostream.StreamClosedError:
             pass
@@ -54,11 +58,16 @@ class CameraTcpConnection(object):
 
 class ControlTcpServer(tornado.tcpserver.TCPServer):
 
+    def __init__(self, camera_controller, *args, **kwargs):
+
+        self.camera_controller = camera_controller
+        super(ControlTcpServer, self).__init__(*args, **kwargs)
+
     @tornado.gen.coroutine
     def handle_stream(self, stream, address):
         """
         Called for each new connection, stream.socket is
         a reference to socket object
         """
-        connection = CameraTcpConnection(stream)
+        connection = CameraTcpConnection(stream, self.camera_controller)
         yield connection.on_connect()

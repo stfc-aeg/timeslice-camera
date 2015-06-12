@@ -5,3 +5,8 @@ body {
   padding: 40px 15px;
   text-align: center;
 }
+
+.btn-fixed-width {
+    width: 40px !important;
+    text-align: center;
+}

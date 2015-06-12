@@ -1,5 +1,6 @@
 import socket
 import struct
+import logging
 
 class ControlMcastClient(object):
 
@@ -14,4 +15,7 @@ class ControlMcastClient(object):
 
     def send(self, data):
 
-      self.socket.sendto(data, (self.mcast_group, self.mcast_port))
+        try:
+            self.socket.sendto(data, (self.mcast_group, self.mcast_port))
+        except socket.error,e:
+            logging.error("Error sending on message on mcast socket: {}".format(e))

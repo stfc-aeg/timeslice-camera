@@ -73,6 +73,11 @@ class CameraController(object):
 
         return self.camera_enabled[1:]
 
+    def set_camera_enable(self, camera_enable):
+
+        logging.debug(camera_enable)
+        self.camera_enabled = [0] + camera_enable
+
     def do_capture(self):
 
         self.control_mcast_client.send("capture id=0 test=1")

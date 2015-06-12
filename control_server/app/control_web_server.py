@@ -44,6 +44,14 @@ class CameraStateHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))
 
+class CameraEnableHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        logging.info("Got camera enable POST request of type {}".format(self.request.headers["Content-Type"]))
+        json_args = json.loads(self.request.body)
+        logging.info(self.request.body)
+        self.application.camera_controller.set_camera_enable(json_args['camera_enable'])
+
 class CameraWebServer(object):
 
     def __init__(self, camera_controller):
@@ -57,6 +65,7 @@ class CameraWebServer(object):
             (r"/capture", CaptureHandler),
             (r"/monitor", MonitorHandler),
             (r"/camera_state", CameraStateHandler),
+            (r"/camera_enable", CameraEnableHandler),
         ], **settings)
 
 

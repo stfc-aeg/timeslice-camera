@@ -36,38 +36,67 @@ for ( var group = 0; group < max_groups; group++)
 {
     var offset = group * cameras_per_group;
     $('<div class="btn-group" role="group">'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
-      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width" '+
-          'data-toggle="button" aria-pressed="false">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
+      '<button id="camera-state-'+(++offset)+'" type="button" class="btn btn-danger btn-fixed-width">'+(offset)+'</button>'+
       '</div><br>').appendTo('#camera-state');
 }
 $('</div>').appendTo('#camera-state');
 
+var camera_enable = [];
+
+for (var icam = 1; icam <= max_cameras; icam++)
+{
+    $('#camera-state-'+(icam)).click(function() {
+        //console.log($(this).html());
+        var camera_id = parseInt($(this).html())
+        camera_enable[camera_id-1] = 1 - camera_enable[camera_id-1];
+        $(this).toggleClass('active');
+        post_camera_enable();
+    });
+}
+
+function post_camera_enable()
+{
+    var enable_var = { 'camera_enable' : camera_enable};
+    $.ajax({
+        type: 'POST',
+        url: '/camera_enable',
+        data: JSON.stringify(enable_var),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        processData: true,
+        // success: function (data, status, jqXHR) {
+        //     console.log('success' + data);
+        // },
+        // error: function (xhr) {
+        //     console.log(xhr.responseText);
+        // }
+     });
+
+}
+
 $('#camera-enable-all').click(function() {
     for (var icam = 1; icam <= max_cameras; icam++)
     {
+        camera_enable[icam-1] = 1;
         $('#camera-state-'+icam).addClass('active');
     }
+    post_camera_enable();
 });
 
 $('#camera-enable-none').click(function() {
     for (var icam = 1; icam <= max_cameras; icam++)
     {
+        camera_enable[icam-1] = 0
         $('#camera-state-'+icam).removeClass('active');
     }
+    post_camera_enable();
 });
 
 poll_camera_state();
@@ -75,12 +104,9 @@ poll_camera_state();
 function poll_camera_state()
 {
     $.getJSON("/camera_state", function(response) {
-        //console.log("Camera state: " + response.camera_state)
-        //console.log("Camera state length: " + response.camera_state.length)
         var loop_len = (response.camera_state.length > max_cameras) ? max_cameras : response.camera_state.length;
         for (var icam = 0; icam < loop_len; icam++)
         {
-            //$('#camera-state-'+(icam+1)).html(response.camera_state[icam]);
             var btn_id = '#camera-state-'+(icam+1);
             if (response.camera_state[icam] == 1) {
                 $(btn_id).removeClass('btn-danger').addClass('btn-success');
@@ -88,12 +114,12 @@ function poll_camera_state()
                 $(btn_id).removeClass('btn-success').addClass('btn-danger');
             }
             if (response.camera_enable[icam] == 1) {
-                $(btn_id).addClass('active');
-            } else {
-                $(btn_id).removeClass('active');
-            }
-
+                 $(btn_id).addClass('active');
+             } else {
+                 $(btn_id).removeClass('active');
+             }
         }
+        camera_enable = response.camera_enable;
     });
     setTimeout(poll_camera_state, 1000);
 }

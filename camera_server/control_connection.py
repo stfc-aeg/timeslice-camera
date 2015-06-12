@@ -26,6 +26,10 @@ class ControlConnection(object):
 
         return self.connected
 
+    def send(self, data):
+
+        self.socket.sendall(data)
+        
     def diconnected(self):
 
         self.socket.close()

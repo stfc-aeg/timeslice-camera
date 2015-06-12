@@ -33,7 +33,7 @@ class CameraTcpConnection(object):
             while True:
                 line = yield self.stream.read_until(b'\n')
                 self.log('got |%s|' % line.decode('utf-8').strip())
-                yield self.stream.write(line)
+                #yield self.stream.write(line)
         except tornado.iostream.StreamClosedError:
             pass
 

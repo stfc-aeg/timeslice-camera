@@ -113,6 +113,8 @@ class CameraCommandParser(object):
         if not self.server.control_connection.is_connected():
             self.server.control_connection.connect(host, port)
 
+        self.server.control_connection.send('ping_ack id={}\n'.format(self.server.id))
+
         return cmd_ok
 
     def capture_cmd(self, args):

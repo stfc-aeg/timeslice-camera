@@ -15,11 +15,11 @@ $('input[name="monitor-enable-checkbox"]').on('switchChange.bootstrapSwitch', fu
 $('#captureButton').click(function() {
 
     $(this).button('loading');
-    $('#capture-state span').html('')
+    //$('#capture-state span').html('')
 
-    $.get('/capture', function(data) {
+    $.post('/capture', function(data) {
         //alert(data);
-        $('#capture-state span').html(data)
+        //$('#capture-state span').html(data)
         $('#captureButton').button('reset');
     });
 
@@ -120,6 +120,14 @@ function poll_camera_state()
              }
         }
         camera_enable = response.camera_enable;
+        $('#capture-state span').html(response.system_state);
+        $('#system-state').html(response.system_status);
+        if (response.system_state = 0) {
+            $('#system-state').removeClass('label-success').addClass('label-danger');
+        }
+        else {
+            $('#system-state').removeClass('label-danger').addClass('label-success');
+        }
     });
     setTimeout(poll_camera_state, 1000);
 }

@@ -16,11 +16,12 @@ class MainHandler(tornado.web.RequestHandler):
 
 class CaptureHandler(tornado.web.RequestHandler):
 
-    def get(self):
+
+    def post(self):
         #self.application.control_mcast_client.send("capture test=1")
         self.application.camera_controller.do_capture()
-        time.sleep(2.0)
-        self.write("Capture complete!")
+        #time.sleep(2.0)
+        #self.write("Capture complete!")
 
 class MonitorHandler(tornado.web.RequestHandler):
 
@@ -40,6 +41,8 @@ class CameraStateHandler(tornado.web.RequestHandler):
         response = {}
         response['camera_state'] = self.application.camera_controller.get_camera_state()
         response['camera_enable'] = self.application.camera_controller.get_camera_enable()
+        response['system_state'] = self.application.camera_controller.get_system_state()
+        response['system_status'] = self.application.camera_controller.get_system_status()
 
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))

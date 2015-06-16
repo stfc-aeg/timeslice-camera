@@ -51,11 +51,14 @@
             <div class="row">
 
                 <div class="col-md-6">
-                    <div id="system_status" class="panel panel-primary">
+                    <div id="system" class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">System Status</h3>
                         </div>
                         <div class="panel-body">
+                            <div>
+                                <h3><span id="system-state" class="label label-danger">Danger</span></h3>
+                            </div>
                             <div id="camera-state">
                                 <!-- This div is populated dynamically by JS -->
                             </div><br>
@@ -82,9 +85,6 @@
                             <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
                                 Capture
                             </button>
-                            <div id="capture-state">
-                                <p><span>&nbsp;</span></p>
-                            </div>
                         </div>
                     </div><!-- /.capture -->
                 </div>

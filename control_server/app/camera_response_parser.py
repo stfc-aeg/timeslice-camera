@@ -28,8 +28,7 @@ class CameraResponseParser(object):
 
                 if 'id' in args:
                     try:
-                        # Decode the id parameter and only run the command if it is intended for
-                        # this camera node or for all (id=0)
+                        # Decode the id parameter 
                         id = int(args['id'])
                         response_ok = self.responses[response](id, args)
 

@@ -47,34 +47,50 @@
 
     <div class="container">
 
-      <div class="starter-template">
-        <h1>Timeslice Camera</h1>
+        <div class="starter-template">
+            <div class="row">
 
-        <div class="checkbox">
-            <label>
-                Monitor cameras:
-                <input type="checkbox" name="monitor-enable-checkbox" data-size="mini">
-            </label>
-            <div id="camera-state">
-                <h3>Camera State</h3>
-                <!-- This div is populated dynamically by JS -->
-            </div><br>
-            <label>Camera enable:</label>
-            <div class="btn-group" role="group">
-                <button id="camera-enable-all"  class="btn btn-primary">All</button>
-                <button id="camera-enable-none" class="btn btn-primary">None</button>
-            </div>
-        </div>
-        <div id="capture">
-            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
-                Capture
-            </button>
-            <div id="capture-state">
-                <p><span>&nbsp;</span></p>
-            </div>
-        </div><!-- /.capture -->
-      </div>
+                <div class="col-md-6">
+                    <div id="system_status" class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">System Status</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div id="camera-state">
+                                <!-- This div is populated dynamically by JS -->
+                            </div><br>
+                            <label>Camera enable:</label>
+                            <div class="btn-group" role="group">
+                                <button id="camera-enable-all"  class="btn btn-primary">All</button>
+                                <button id="camera-enable-none" class="btn btn-primary">None</button>
+                            </div>
+                            <div class="checkbox">
+                                <label>Monitor cameras:</label>
+                                <input type="checkbox" name="monitor-enable-checkbox" data-size="mini">
+                            </div>
+                        </div>
+                    </div><!-- /.system_status -->
+                </div>
 
+                <div class="col-md-6">
+
+                    <div id="capture" class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Image Capture</h3>
+                        </div>
+                        <div class="panel-body">
+                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
+                                Capture
+                            </button>
+                            <div id="capture-state">
+                                <p><span>&nbsp;</span></p>
+                            </div>
+                        </div>
+                    </div><!-- /.capture -->
+                </div>
+
+            </div> <!-- /.row -->
+        </div><!-- /.starter-template -->
     </div><!-- /.container -->
 
     <!-- Bootstrap core JavaScript

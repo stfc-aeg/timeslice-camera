@@ -6,6 +6,8 @@ class ControlConnection(object):
 
     def __init__(self):
 
+        self.socket = None
+
         self.connected = False
         self.timeout = 2.0
         self.logger = logger.get_logger()
@@ -29,6 +31,10 @@ class ControlConnection(object):
 
     def send(self, data):
 
+        if not self.connected:
+            self.logger.error("Cannot send data to control server: not connected")
+            return
+            
         try:
             self.socket.sendall(data)
         except socket.error, e:

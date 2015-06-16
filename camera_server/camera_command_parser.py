@@ -120,7 +120,14 @@ class CameraCommandParser(object):
     def capture_cmd(self, args):
         self.logger.debug("Capture command")
 
-        return self.server.do_capture()
+        capture_ok = self.server.do_capture()
+
+        if capture_ok:
+            response_cmd = 'capture_ack'
+        else:
+            response_cmd = 'capture_nack'
+
+        self.server.control_connection.send('{} id={}\n'.format(response_cmd, self.server.id))
 
         return capture_ok
 

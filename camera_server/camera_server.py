@@ -7,6 +7,7 @@ import time
 import sched
 import os
 import argparse
+import importlib
 
 import logger
 import camera_command_parser
@@ -38,15 +39,12 @@ class CameraServer(SocketServer.UDPServer):
         SocketServer.UDPServer.__init__(self, ("", 0), UDPHandler)
 
         if args.simulate:
-            # camera_type = simulated_camera.SimulatedCamera
-            # simulated_camera.SimulatedCamera.set_camera_id(args.id)
-            from simulated_camera import SimulatedCamera, PiCameraRuntimeError
-            print dir(self)
-            self.camera_type = SimulatedCamera
-            SimulatedCamera.set_camera_id(args.id)
+            self.camera_mod = importlib.import_module('simcamera')
+            self.camera_type = self.camera_mod.SimCamera
+            self.camera_mod.SimCamera.set_camera_id(args.id)
         else:
-            import picamera
-            self.camera_type = picamera.PiCamera
+            self.camera_mod = importlib.import_module('picamera')
+            self.camera_type = self.camera_mod.PiCamera
 
         self.logger = logger.get_logger()
 
@@ -76,10 +74,11 @@ class CameraServer(SocketServer.UDPServer):
 
         capture_ok = True
         try:
-            self.server.camera.capture('1.jpg')
-        except PiCameraRuntimeError, e:
+            self.camera.capture('1.jpg')
+        except self.camera_mod.PiCameraRuntimeError, e:
             capture_ok = False
 
+        return capture_ok
 
 class UDPHandler(SocketServer.BaseRequestHandler):
 

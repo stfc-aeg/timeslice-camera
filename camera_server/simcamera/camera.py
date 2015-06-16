@@ -1,19 +1,9 @@
+from simcamera.exception import ( PiCameraError, PiCameraRuntimeError )
+
 import logger
 import os
 
-class PiCameraError(Exception):
-    """
-    Base class for PiCamera errors.
-    """
-
-
-class PiCameraRuntimeError(PiCameraError, RuntimeError):
-    """
-    Raised when an invalid sequence of operations is attempted with a
-    :class:`~picamera.camera.PiCamera` object.
-    """
-
-class SimulatedCamera(object):
+class SimCamera(object):
 
     camera_id = 0
 
@@ -24,7 +14,7 @@ class SimulatedCamera(object):
     def __init__(self):
 
         self.logger = logger.get_logger()
-        self.logger.debug("Using simulated camera object with ID {}".format(SimulatedCamera.camera_id))
+        self.logger.debug("Using simulated camera object with ID {}".format(SimCamera.camera_id))
 
         self.image = None
 
@@ -37,7 +27,7 @@ class SimulatedCamera(object):
     def capture(self, output, format=None, use_video_port=False, resize=None, splitter_port=0, **options):
 
         source_path =  os.path.dirname(os.path.realpath(__file__))
-        testcard_path = os.path.join(source_path, "testcards", '{:02d}.missing.jpg'.format(SimulatedCamera.camera_id))
+        testcard_path = os.path.join(source_path, "testcards", '{:02d}.jpg'.format(SimCamera.camera_id))
 
         try:
             testcard_file = open(testcard_path, 'r')

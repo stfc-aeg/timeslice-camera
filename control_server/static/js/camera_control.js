@@ -122,7 +122,7 @@ function poll_camera_state()
         camera_enable = response.camera_enable;
         $('#capture-state span').html(response.system_state);
         $('#system-state').html(response.system_status);
-        if (response.system_state = 0) {
+        if (response.system_state == 0) {
             $('#system-state').removeClass('label-success').addClass('label-danger');
         }
         else {

@@ -67,7 +67,7 @@ class CameraController(object):
                 else:
                     self.system_state = CameraController.SYSTEM_STATE_NOT_READY
                     status_flag = "NOT "
-                self.system_status = "System {}ready, {}/{} enabled cameras alive".format(
+                self.system_status = "System {}ready, {}/{} cameras alive".format(
                     status_flag, num_enabled_cameras_alive, num_enabled_cameras)
 
                 self.camera_monitor_loop = self.camera_monitor_loop_ratio

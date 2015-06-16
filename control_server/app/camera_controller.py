@@ -9,11 +9,13 @@ class CameraController(object):
 
     SYSTEM_STATE_NOT_READY = 0
     SYSTEM_STATE_READY     = 1
-    SYSTEM_STATE_CAPTURING = 2
 
     CAMERA_STATE_DEAD  = 0
     CAMERA_STATE_ALIVE = 1
 
+    CAPTURE_STATE_IDLE      = 0
+    CAPTURE_STATE_CAPTURING = 1
+    CAPTURE_STATE_CAPTURED  = 2
 
     def __init__(self, control_mcast_client):
 
@@ -30,11 +32,17 @@ class CameraController(object):
         self.camera_enabled[1] = 1
         self.camera_enabled[2] = 1
 
+        self.camera_capture_state = [CameraController.CAPTURE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
+        self.capture_time = 0.0
+        self.capture_state = CameraController.CAPTURE_STATE_IDLE
+        self.capture_status = "Idle"
+
         self.camera_monitor_enable = True
         self.camera_monitor_loop_ratio = 10
         self.camera_monitor_loop = self.camera_monitor_loop_ratio
 
         self.camera_max_ping_age = 2.0
+        self.capture_timeout = 5.0
 
         self.controller_period = 100
         self.controller = tornado.ioloop.PeriodicCallback(self.controller_callback, self.controller_period)
@@ -44,6 +52,22 @@ class CameraController(object):
 
     def controller_callback(self):
 
+        # Validate the current capture state and check if any pending captures are running
+        if self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
+            num_cameras_capturing = sum([(enabled and (state == CameraController.CAPTURE_STATE_CAPTURING))
+                for (enabled, state) in zip(self.camera_enabled[1:], self.camera_capture_state[1:])])
+            capture_elapsed_time = time.time() - self.capture_time
+            if num_cameras_capturing > 0:
+                if capture_elapsed_time > self.capture_timeout:
+                    self.capture_status = "Captured timedout out on {} cameras".format(num_cameras_capturing)
+                    logging.error(self.capture_status)
+                    self.capture_state = CameraController.CAPTURE_STATE_IDLE
+            else:
+                self.capture_status = "Camera capture completed OK after {:.3f} secs".format(capture_elapsed_time)
+                logging.info(self.capture_status)
+                self.capture_state = CameraController.CAPTURE_STATE_IDLE #TODO initiate image readback at this point
+
+        # Run the camera periodic monitoring if enabled
         if self.camera_monitor_enable:
             self.camera_monitor_loop -= 1
             if self.camera_monitor_loop == 0:
@@ -103,6 +127,16 @@ class CameraController(object):
 
     def do_capture(self):
 
+        # Set the system state to capturing, set the capture time
+        self.capture_state = CameraController.CAPTURE_STATE_CAPTURING
+        self.capture_time = time.time()
+        self.capture_status = "Capture in progress"
+
+        # Set state of enabled cameras to capturing
+        for camera in range(1, CameraController.MAX_CAMERAS+1):
+            if self.camera_enabled[camera]:
+                self.camera_capture_state[camera] = CameraController.CAPTURE_STATE_CAPTURING
+
         self.control_mcast_client.send("capture id=0 test=1")
 
 
@@ -116,3 +150,15 @@ class CameraController(object):
             logging.warning("Got camera ping response for illegal ID: {}".format(id))
         else:
             self.camera_last_ping_time[id] = time.time()
+
+    def update_camera_capture_state(self, id, did_ack):
+
+        if id < 1 or id > CameraController.MAX_CAMERAS:
+            logging.warning("Got camera capture response for illegal ID: {}", format(id))
+        else:
+            if self.camera_capture_state[id] != CameraController.CAPTURE_STATE_CAPTURING:
+                logging.warning("Got capture response for camera ID {} when not in capturing state".format(id))
+            elif not did_ack:
+                logging.warning("Camera ID {} responded with no-acknowledge for capture command".format(id))
+
+            self.camera_capture_state[id] = CameraController.CAPTURE_STATE_CAPTURED

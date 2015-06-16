@@ -8,7 +8,9 @@ class CameraResponseParser(object):
         self.camera_controller = camera_controller
 
         # Define dictionary of legal responses and assoicated methods
-        self.responses = { 'PING_ACK'       : self.ping_response,
+        self.responses = { 'PING_ACK'       : self.ping_ack_response,
+                           'CAPTURE_ACK'    : self.capture_ack_response,
+                           'CAPTURE_NACK'   : self.capture_nack_response,
                         }
 
     def parse_response(self, response_data):
@@ -28,7 +30,7 @@ class CameraResponseParser(object):
 
                 if 'id' in args:
                     try:
-                        # Decode the id parameter 
+                        # Decode the id parameter
                         id = int(args['id'])
                         response_ok = self.responses[response](id, args)
 
@@ -49,7 +51,17 @@ class CameraResponseParser(object):
 
         return response_ok
 
-    def ping_response(self, id, args):
+    def ping_ack_response(self, id, args):
 
         logging.debug("Got ping response, ID={}, args={}".format(id, args))
         self.camera_controller.update_camera_last_ping_time(id)
+
+    def capture_ack_response(self, id, args):
+
+        logging.debug("Got capture acknowledge, ID={}, args={}".format(id, args))
+        self.camera_controller.update_camera_capture_state(id, True)
+
+    def capture_nack_response(self, id, args):
+
+        logging.debug("Got capture no-acknowledge, ID={}, args={}".format(id, args))
+        self.camera_controller.update_camera_capture_state(id, False)

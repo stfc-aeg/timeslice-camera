@@ -43,6 +43,13 @@ class CameraServer(SocketServer.UDPServer):
         self.camera = camera
         self.id = args.id
 
+        if args.id > 0:
+            self.id = args.id
+        else:
+            ipaddr = socket.gethostbyname(socket.gethostname())
+            ipoct = int(ipaddr.split('.')[-1])
+            self.id = ipoct - args.idoffset
+
         self.command_parser = camera_command_parser.CameraCommandParser(self)
 
         self.socket = socket.socket(
@@ -74,7 +81,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Timeslice camera server")
 
     parser.add_argument('--id', action="store", dest="id", type=int, default=0,
-                        help="Camera ID")
+                        help="Camera ID, use IP address offset to resolve if specified")
+    parser.add_argument('--idoffset', action="store", dest="idoffset", type=int, default=50,
+                        help="Offset value used to resolve camera ID from IP address")
     parser.add_argument('--mcast_group', action="store", dest="mcast_group", default=MCAST_GRP,
                         help="Multicast group for camera server to bind to")
     parser.add_argument("--mcast_port", action="store", type=int, dest="mcast_port", default=MCAST_PORT,

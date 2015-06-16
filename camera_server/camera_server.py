@@ -11,7 +11,6 @@ import argparse
 import logger
 import camera_command_parser
 import control_connection
-from simulated_camera import *
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
@@ -34,13 +33,23 @@ class Camera(object):
 #class CameraServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
 class CameraServer(SocketServer.UDPServer):
 
-    def __init__(self, camera, args):
+    def __init__(self, args):
 
         SocketServer.UDPServer.__init__(self, ("", 0), UDPHandler)
 
+        if args.simulate:
+            # camera_type = simulated_camera.SimulatedCamera
+            # simulated_camera.SimulatedCamera.set_camera_id(args.id)
+            from simulated_camera import SimulatedCamera, PiCameraRuntimeError
+            print dir(self)
+            self.camera_type = SimulatedCamera
+            SimulatedCamera.set_camera_id(args.id)
+        else:
+            import picamera
+            self.camera_type = picamera.PiCamera
+
         self.logger = logger.get_logger()
 
-        self.camera = camera
         self.id = args.id
 
         self.command_parser = camera_command_parser.CameraCommandParser(self)
@@ -57,6 +66,20 @@ class CameraServer(SocketServer.UDPServer):
         self.control_connection = control_connection.ControlConnection()
 
         self.logger.info("Camera server starting up with ID {}".format(self.id))
+
+    def run(self):
+
+        with self.camera_type() as self.camera:
+            self.serve_forever()
+
+    def do_capture(self):
+
+        capture_ok = True
+        try:
+            self.server.camera.capture('1.jpg')
+        except PiCameraRuntimeError, e:
+            capture_ok = False
+
 
 class UDPHandler(SocketServer.BaseRequestHandler):
 
@@ -105,18 +128,8 @@ def main():
     # Set up a customelogger
     logger.setup_logger('camera_server', args.logging)
 
-    if args.simulate:
-        # camera_type = simulated_camera.SimulatedCamera
-        # simulated_camera.SimulatedCamera.set_camera_id(args.id)
-        camera_type = SimulatedCamera
-        SimulatedCamera.set_camera_id(args.id)
-    else:
-        import picamera
-        camera_type = picamera.PiCamera
-
-    with camera_type() as camera:
-        server = CameraServer(camera, args)
-        server.serve_forever()
+    server = CameraServer(args)
+    server.run()
 
 if __name__ == '__main__':
 

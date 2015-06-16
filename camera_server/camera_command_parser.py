@@ -119,7 +119,14 @@ class CameraCommandParser(object):
 
     def capture_cmd(self, args):
         self.logger.debug("Capture command")
-        return True
+
+        capture_ok = True
+        try:
+            self.server.camera.capture('1.jpg')
+        except PiCameraRuntimeError, e:
+            capture_ok = False
+
+        return capture_ok
 
     def set_cmd(self, args):
         self.logger.debug("Set command")

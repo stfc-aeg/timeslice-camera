@@ -11,7 +11,7 @@ import argparse
 import logger
 import camera_command_parser
 import control_connection
-import simulated_camera
+from simulated_camera import *
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
@@ -42,13 +42,6 @@ class CameraServer(SocketServer.UDPServer):
 
         self.camera = camera
         self.id = args.id
-
-        if args.id > 0:
-            self.id = args.id
-        else:
-            ipaddr = socket.gethostbyname(socket.gethostname())
-            ipoct = int(ipaddr.split('.')[-1])
-            self.id = ipoct - args.idoffset
 
         self.command_parser = camera_command_parser.CameraCommandParser(self)
 
@@ -94,7 +87,15 @@ def parse_args():
                         #metavar="debug|info|warning|error|none",
                         choices=['debug', 'info', 'warning', 'error', 'none'],
                         help="Set the logging level")
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    if args.id == 0:
+        ipaddr = socket.gethostbyname(socket.gethostname())
+        ipoct = int(ipaddr.split('.')[-1])
+        args.id = ipoct - args.idoffset
+
+    return args
 
 def main():
 
@@ -105,10 +106,13 @@ def main():
     logger.setup_logger('camera_server', args.logging)
 
     if args.simulate:
-        camera_type = simulated_camera.SimulatedCamera
+        # camera_type = simulated_camera.SimulatedCamera
+        # simulated_camera.SimulatedCamera.set_camera_id(args.id)
+        camera_type = SimulatedCamera
+        SimulatedCamera.set_camera_id(args.id)
     else:
         import picamera
-        camera_type = ipcamera.PiCamera
+        camera_type = picamera.PiCamera
 
     with camera_type() as camera:
         server = CameraServer(camera, args)

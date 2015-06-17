@@ -14,6 +14,8 @@ class CameraResponseParser(object):
                            'CAPTURE_NACK'   : self.capture_nack_response,
                            'RETRIEVE_ACK'   : self.retrieve_ack_response,
                            'RETRIEVE_NACK'  : self.retrieve_nack_response,
+                           'PREVIEW_ACK'    : self.preview_ack_response,
+                           'PREVIEW_NACK'   : self.preview_nack_response,
                         }
 
     def parse_response(self, response_data):
@@ -108,3 +110,18 @@ class CameraResponseParser(object):
 
         logging.error("Got retrieve no-acknowledge for camera {}, args={}".format(id, args))
         self.camera_controller.update_camera_retrieve_state(id, False, None)
+
+    def preview_ack_response(self, id, args, raw_data):
+
+        image_len = len(raw_data)
+
+        if image_len:
+            logging.debug("Got preview acknowledge from camera {}, image length={}".format(id,image_len))
+            self.camera_controller.update_preview_image(id, raw_data)
+        else:
+            logging.error("Got preview acknowledge from camera {} but with no image data".format(id))
+
+
+    def preview_nack_response(self, id, args, raw_data):
+
+        logging.error("Got preview no-acknowledge for camera {}, args={}".format(id, args))

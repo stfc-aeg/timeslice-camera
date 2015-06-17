@@ -52,6 +52,14 @@ class CameraController(object):
         self.camera_monitor_loop_ratio = 10
         self.camera_monitor_loop = self.camera_monitor_loop_ratio
 
+        self.preview_enable = False
+        self.preview_camera = 0
+        self.preview_update = 0
+        self.preview_time = 0.0
+
+        self.preview_id = 0
+        self.preview_image = ''
+
         self.camera_max_ping_age = 2.0
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
@@ -66,7 +74,7 @@ class CameraController(object):
     def controller_callback(self):
 
         self.handle_capture_state()
-
+        self.handle_preview_update()
         self.monitor_camera_state()
 
     def handle_capture_state(self):
@@ -126,6 +134,16 @@ class CameraController(object):
                     logging.error("Render output:\n{}\n{}".format(render_stdout, render_stderr))
 
                 self.capture_state = CameraController.CAPTURE_STATE_IDLE
+
+    def handle_preview_update(self):
+
+        if self.preview_enable:
+
+            if (time.time() - self.preview_time) > self.preview_update:
+                logging.debug("Preview update fired")
+
+                self.control_mcast_client.send("preview id={}".format(self.preview_camera))
+                self.preview_time = time.time()
 
     def monitor_camera_state(self):
 
@@ -202,6 +220,16 @@ class CameraController(object):
     def get_camera_version_info(self):
 
         return self.camera_version_info[1:]
+
+    def get_preview_image(self):
+
+        return self.preview_image
+
+    def set_preview_mode(self, enable, camera, update):
+
+        self.preview_enable = enable
+        self.preview_camera = camera
+        self.preview_update = update
 
     def do_capture(self):
 
@@ -292,3 +320,8 @@ class CameraController(object):
                 image_file.write(image_data)
                 image_file.close()
                 logging.info("Wrote image data for camera {} to file {}".format(id, image_file_name))
+
+    def update_preview_image(self, id, image_data):
+
+        self.preview_image_id = id
+        self.preview_image = image_data

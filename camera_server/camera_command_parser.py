@@ -28,6 +28,7 @@ class CameraCommandParser(object):
         self.commands = {
                           'PING'       : self.ping_cmd,
                           'VERSION'    : self.version_cmd,
+                          'PREVIEW'    : self.preview_cmd,
                           'CAPTURE'    : self.capture_cmd,
                           'RETRIEVE'   : self.retrieve_cmd,
                           'SET'        : self.set_cmd,
@@ -120,7 +121,33 @@ class CameraCommandParser(object):
 
         return cmd_ok
 
+    def preview_cmd(self, args):
+
+        preview_ok = True
+        self.logger.debug("Preview command")
+
+        preview_ok = self.server.do_capture()
+
+        image_size = 0
+
+        if preview_ok:
+            image_size = self.server.get_image_size()
+            if image_size <= 0:
+                preview_ok = False
+                self.logger.error("Preview command failed, returned image data size = {}".format(image_size))
+
+        if preview_ok:
+            response_cmd = 'preview_ack'
+        else:
+            response_cmd = 'preview_nack'
+
+        self.server.control_connection.send('{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size))
+        self.server.control_connection.send(self.server.get_image_data())
+
+        return preview_ok
+
     def capture_cmd(self, args):
+
         self.logger.debug("Capture command")
 
         capture_ok = self.server.do_capture()

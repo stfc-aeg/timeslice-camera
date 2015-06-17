@@ -34,7 +34,8 @@ class MonitorHandler(tornado.web.RequestHandler):
 class PreviewHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.write("preview: {}".format(time.time()))
+        self.set_header("Content-Type", "image/jpeg")
+        self.write(self.application.camera_controller.get_preview_image())
 
     def post(self):
         enable = True if self.get_query_argument('enable', default='0') == '1' else False
@@ -42,6 +43,7 @@ class PreviewHandler(tornado.web.RequestHandler):
         update = int(self.get_query_argument('update', default='1'))
 
         logging.debug("Got preview POST request: enable={} camera={} update={}".format(enable, camera, update))
+        self.application.camera_controller.set_preview_mode(enable, camera, update)
 
 class CameraVersionHandler(tornado.web.RequestHandler):
 

@@ -57,9 +57,10 @@ function poll_preview_image()
 {
     console.log("poll_preview_image");
     if (preview_enable) {
-        $.get('/preview', function(data) {
-            $('#preview-image').html(data);
-        });
+        // $.get('/preview', function(data) {
+        //     $('#preview-image-info').html(data);
+        // });
+        $("#preview-image").attr("src", $('#preview-image').attr('data-src'))
     }
     setTimeout(poll_preview_image, preview_update_time * 1000);
 }

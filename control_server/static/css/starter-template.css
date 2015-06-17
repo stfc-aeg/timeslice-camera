@@ -10,3 +10,8 @@ body {
     width: 40px !important;
     text-align: center;
 }
+
+img.resize {
+    max-width: 50%;
+    max-size:  50%;
+}

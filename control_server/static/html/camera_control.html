@@ -105,8 +105,20 @@
             <h4 class="modal-title" id="myModalLabel">Camera Version Information</h4>
           </div>
           <div class="modal-body">
-            <div id="version-modal-content" class="container-fluid">
-                <div class="row">
+          <div id="version-modal-content" class="container-fluid">
+              <table class="table table-condensed table-striped">
+                  <thead>
+                    <tr>
+                        <th width="10%">Camera</th><th width="15%">Version</th><th width="25%">Time</th>
+                        <th width="10%">Camera</th><th width="15%">Version</th><th width="25%">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+              </table>
+          </div>
+            <!-- <div id="version-modal-content" class="container-fluid">
+                <div class="row active">
                     <div class="col-md-1">Camera</div>
                     <div class="col-md-2">Version</div>
                     <div class="col-md-3">Time</div>
@@ -115,7 +127,7 @@
                     <div class="col-md-3">Time</div>
                 </div>
                 <span>&nbsp;</span>
-            </div>
+            </div> -->
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" id="version-modal-refresh">Refresh</button>

@@ -140,18 +140,26 @@ $('#version-info-button').click(function() {
 
 $('#version-modal').on('shown.bs.modal', function (e) {
 
-    $('#version-modal-content span').html('');
+    $('#version-modal-content tbody').html('');
 
     for (var icam = 0; icam < max_cameras/2; icam++)
     {
-        $('<div class="row">'+
-            '<div class="col-md-1">'  + (icam+1)  + '</div>'+
-            '<div id="camera-commit-' + (icam+1)  + '" class="col-md-2"> &nbsp; </div>'+
-            '<div id="camera-time-'   + (icam+1)  + '" class="col-md-3"> &nbsp; </div>'+
-            '<div class="col-md-1">'  + (icam+25) + '</div>'+
-            '<div id="camera-commit-' + (icam+25) +'" class="col-md-2"> &nbsp; </div>'+
-            '<div id="camera-time-'   + (icam+25) +'" class="col-md-3"> &nbsp; </div>'+
-          '</div>').appendTo('#version-modal-content span');
+        // $('<div class="row">'+
+        //     '<div class="col-md-1">'  + (icam+1)  + '</div>'+
+        //     '<div id="camera-commit-' + (icam+1)  + '" class="col-md-2"> &nbsp; </div>'+
+        //     '<div id="camera-time-'   + (icam+1)  + '" class="col-md-3"> &nbsp; </div>'+
+        //     '<div class="col-md-1">'  + (icam+25) + '</div>'+
+        //     '<div id="camera-commit-' + (icam+25) +'" class="col-md-2"> &nbsp; </div>'+
+        //     '<div id="camera-time-'   + (icam+25) +'" class="col-md-3"> &nbsp; </div>'+
+        //   '</div>').appendTo('#version-modal-content tbody');
+        $('<tr>'+
+            '<td><b>' + (icam+1)  + '</b></td>'+
+            '<td id="camera-commit-' + (icam+1)  + '"> &nbsp; </td>'+
+            '<td id="camera-time-'   + (icam+1)  + '"> &nbsp; </td>'+
+            '<td><b>' + (icam+25) + '</b></td>'+
+            '<td id="camera-commit-' + (icam+25) +'"> &nbsp; </td>'+
+            '<td id="camera-time-'   + (icam+25) +'"> &nbsp; </td>'+
+          '</tr>').appendTo('#version-modal-content tbody');
     }
     update_camera_version_info();
 });

@@ -1,7 +1,10 @@
 import tornado.ioloop
 import logging
-import camera_response_parser
 import time
+import subprocess
+import shlex
+
+import camera_response_parser
 
 class CameraController(object):
 
@@ -18,6 +21,7 @@ class CameraController(object):
     CAPTURE_STATE_CAPTURED    = 2
     CAPTURE_STATE_RETRIEVING  = 3
     CAPTURE_STATE_RETRIEVED   = 4
+    CAPTURE_STATE_RENDERING   = 5
 
     def __init__(self, control_mcast_client):
 
@@ -30,17 +34,20 @@ class CameraController(object):
 
         self.camera_state = [CameraController.CAMERA_STATE_DEAD]  * (CameraController.MAX_CAMERAS+1)
         self.camera_last_ping_time = [0.0] * (CameraController.MAX_CAMERAS+1)
-        self.camera_version_info   = [('unknown', '0')] * (CameraController.MAX_CAMERAS+1)
+        self.camera_version_info   = [('Unknown', '0')] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled[1] = 1
         self.camera_enabled[2] = 1
 
         self.camera_capture_state = [CameraController.CAPTURE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
-        self.capture_time = 0.0
-        self.retrieve_time = 0.0
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
         self.capture_status = "Idle"
 
+        self.capture_time = 0.0
+        self.retrieve_time = 0.0
+        self.render_time = 0.0
+
+        self.render_process = None
         self.camera_monitor_enable = True
         self.camera_monitor_loop_ratio = 10
         self.camera_monitor_loop = self.camera_monitor_loop_ratio
@@ -48,6 +55,7 @@ class CameraController(object):
         self.camera_max_ping_age = 2.0
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
+        self.render_timeout = 5.0
 
         self.controller_period = 100
         self.controller = tornado.ioloop.PeriodicCallback(self.controller_callback, self.controller_period)
@@ -96,7 +104,27 @@ class CameraController(object):
             else:
                 self.capture_status = "Image retrieve completed OK after {:.3f} secs".format(retrieve_elapsed_time)
                 logging.info(self.capture_status)
-                #self.do_generate_movie()
+                self.do_render()
+
+        elif self.capture_state == CameraController.CAPTURE_STATE_RENDERING:
+
+            render_state = self.render_process.poll()
+            render_elapsed_time = time.time() - self.retrieve_time
+
+            if render_state is None:
+                if render_elapsed_time > self.render_timeout:
+                    self.capture_status = "Movie render timed out"
+                    self.capture_state = CameraController.CAPTURE_STATE_IDLE
+            else:
+                (render_stdout, render_stderr) = self.render_process.communicate()
+                if render_state == 0:
+                    self.capture_status = "Movie render completed OK after {:.3f} secs".format(render_elapsed_time)
+                    logging.info(self.capture_status)
+                else:
+                    self.capture_state = "Movie render failed with return code {}".format(render_state)
+                    logging.error(self.capture_status)
+                    logging.error("Render output:\n{}\n{}".format(render_stdout, render_stderr))
+
                 self.capture_state = CameraController.CAPTURE_STATE_IDLE
 
     def monitor_camera_state(self):
@@ -153,7 +181,6 @@ class CameraController(object):
 
     def set_camera_enable(self, camera_enable):
 
-        logging.debug(camera_enable)
         self.camera_enabled = [0] + camera_enable
 
     def get_system_state(self):
@@ -203,6 +230,18 @@ class CameraController(object):
                 self.camera_capture_state[camera] = CameraController.CAPTURE_STATE_RETRIEVING
 
         self.control_mcast_client.send("retrieve id=0")
+
+    def do_render(self):
+
+        self.capture_state = CameraController.CAPTURE_STATE_RENDERING
+        self.render_time = time.time()
+        self.capture_status = "Movie render in progress"
+
+        render_cmd = "ffmpeg -framerate 2 -i \'/tmp/image_%02d.jpg\' -codec copy -y /tmp/timeslice.mkv"
+        logging.info("Launching render process with command: {}".format(render_cmd))
+
+        self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 
     def process_camera_response(self, response):
 

@@ -31,6 +31,18 @@ class MonitorHandler(tornado.web.RequestHandler):
         self.application.camera_controller.enable_camera_monitor(enable)
         logging.info("Setting camera state monitor enable to {}".format(enable))
 
+class PreviewHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.write("preview: {}".format(time.time()))
+
+    def post(self):
+        enable = True if self.get_query_argument('enable', default='0') == '1' else False
+        camera = int(self.get_query_argument('camera', default='1'))
+        update = int(self.get_query_argument('update', default='1'))
+
+        logging.debug("Got preview POST request: enable={} camera={} update={}".format(enable, camera, update))
+
 class CameraVersionHandler(tornado.web.RequestHandler):
 
     def post(self):
@@ -65,7 +77,6 @@ class CameraEnableHandler(tornado.web.RequestHandler):
     def post(self):
         logging.info("Got camera enable POST request of type {}".format(self.request.headers["Content-Type"]))
         json_args = json.loads(self.request.body)
-        logging.info(self.request.body)
         self.application.camera_controller.set_camera_enable(json_args['camera_enable'])
 
 class CameraWebServer(object):
@@ -80,6 +91,7 @@ class CameraWebServer(object):
             (r"/", MainHandler),
             (r"/capture", CaptureHandler),
             (r"/monitor", MonitorHandler),
+            (r"/preview", PreviewHandler),
             (r"/camera_version", CameraVersionHandler),
             (r"/camera_state", CameraStateHandler),
             (r"/camera_enable", CameraEnableHandler),

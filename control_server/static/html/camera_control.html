@@ -50,7 +50,7 @@
         <div class="starter-template">
             <div class="row">
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div id="system" class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">System Status</h3>
@@ -68,7 +68,7 @@
                                 <button id="camera-enable-none" class="btn btn-primary">None</button>
                             </div>
                             <div class="checkbox">
-                                <label>Monitor cameras:</label>
+                                <label><b>Monitor cameras:</b></label>
                                 <input type="checkbox" name="monitor-enable-checkbox" data-size="mini">
                             </div>
                             <a href="#" id="version-info-button" class="btn btn-primary" data-toggle="modal" data-target="#version-modal">Version Info</a>
@@ -76,10 +76,45 @@
                     </div><!-- /.system_status -->
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-8">
+                        <div id="preview" class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Camera Preview</h3>
+                            </div>
+                            <div class="panel-body">
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div><label><b>Enable:<b></label></div>
+                                            <input type="checkbox" name="preview-enable-checkbox" data-size="normal">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Camera:</label>
+                                            <select id="preview-camera-select" class="form-control">
+                                                <!-- This select will be populated dynamically by JS -->
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Update time (s):</label>
+                                            <select id="preview-update-rate" class="form-control">
+                                                <option>1</option>
+                                                <option>2</option>
+                                                <option>5</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <span id="preview-image">image goes here</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- /.preview -->
+
                     <div id="capture" class="panel panel-primary">
                         <div class="panel-heading">
-                            <h3 class="panel-title">Image Capture</h3>
+                            <h3 class="panel-title">Timeslice Capture</h3>
                         </div>
                         <div class="panel-body">
                             <div>

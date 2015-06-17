@@ -1,5 +1,13 @@
 //$('#captureButton').button();
 
+var max_cameras = 48
+var cameras_per_group = 8;
+var max_groups = max_cameras / cameras_per_group;
+var icam = 0;
+var preview_enable = false;
+var preview_camera_select = 1;
+var preview_update_time = 1;
+
 // Set up monitor enable checkbox and sync state with server
 $("[name='monitor-enable-checkbox']").bootstrapSwitch();
 $.get('/monitor', function(data) {
@@ -11,6 +19,50 @@ $.get('/monitor', function(data) {
 $('input[name="monitor-enable-checkbox"]').on('switchChange.bootstrapSwitch', function(event, state) {
     $.post('/monitor?enable=' + (state == true ? 1 : 0))
 });
+
+$("[name='preview-enable-checkbox']").bootstrapSwitch();
+$("[name='preview-enable-checkbox']").bootstrapSwitch('state', preview_enable, true);
+
+for (var icam = 1; icam <= max_cameras; icam++)
+{
+    $('<option>'+icam+'</option>').appendTo('#preview-camera-select');
+}
+
+$('input[name="preview-enable-checkbox"]').on('switchChange.bootstrapSwitch', function(event,state) {
+    post_preview_change();
+});
+
+$('#preview-camera-select').change(function() {
+    post_preview_change();
+});
+
+$('#preview-update-rate').change(function() {
+    post_preview_change();
+});
+
+function post_preview_change()
+{
+    preview_enable = $("[name='preview-enable-checkbox']").bootstrapSwitch('state');
+    preview_camera_select = $('#preview-camera-select').val();
+    preview_update_time = parseInt($('#preview-update-rate').val());
+    console.log("preview enable: " + preview_enable + " camera: " + preview_camera_select + " rate: " + preview_update_time);
+
+    $.post("/preview?enable=" + (preview_enable == true ? 1 : 0) + "&camera=" + preview_camera_select + "&update=" + preview_update_time);
+
+}
+
+poll_preview_image();
+
+function poll_preview_image()
+{
+    console.log("poll_preview_image");
+    if (preview_enable) {
+        $.get('/preview', function(data) {
+            $('#preview-image').html(data);
+        });
+    }
+    setTimeout(poll_preview_image, preview_update_time * 1000);
+}
 
 $('#captureButton').click(function() {
 
@@ -26,11 +78,6 @@ $('#captureButton').click(function() {
     //setTimeout(function() { $('#captureButton').button('reset');}, 2000);
 
 });
-
-var max_cameras = 48
-var cameras_per_group = 8;
-var max_groups = max_cameras / cameras_per_group;
-var icam = 0;
 
 for ( var group = 0; group < max_groups; group++)
 {
@@ -71,12 +118,6 @@ function post_camera_enable()
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         processData: true,
-        // success: function (data, status, jqXHR) {
-        //     console.log('success' + data);
-        // },
-        // error: function (xhr) {
-        //     console.log(xhr.responseText);
-        // }
      });
 
 }
@@ -144,14 +185,6 @@ $('#version-modal').on('shown.bs.modal', function (e) {
 
     for (var icam = 0; icam < max_cameras/2; icam++)
     {
-        // $('<div class="row">'+
-        //     '<div class="col-md-1">'  + (icam+1)  + '</div>'+
-        //     '<div id="camera-commit-' + (icam+1)  + '" class="col-md-2"> &nbsp; </div>'+
-        //     '<div id="camera-time-'   + (icam+1)  + '" class="col-md-3"> &nbsp; </div>'+
-        //     '<div class="col-md-1">'  + (icam+25) + '</div>'+
-        //     '<div id="camera-commit-' + (icam+25) +'" class="col-md-2"> &nbsp; </div>'+
-        //     '<div id="camera-time-'   + (icam+25) +'" class="col-md-3"> &nbsp; </div>'+
-        //   '</div>').appendTo('#version-modal-content tbody');
         $('<tr>'+
             '<td><b>' + (icam+1)  + '</b></td>'+
             '<td id="camera-commit-' + (icam+1)  + '"> &nbsp; </td>'+

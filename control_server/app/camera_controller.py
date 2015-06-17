@@ -13,9 +13,11 @@ class CameraController(object):
     CAMERA_STATE_DEAD  = 0
     CAMERA_STATE_ALIVE = 1
 
-    CAPTURE_STATE_IDLE      = 0
-    CAPTURE_STATE_CAPTURING = 1
-    CAPTURE_STATE_CAPTURED  = 2
+    CAPTURE_STATE_IDLE        = 0
+    CAPTURE_STATE_CAPTURING   = 1
+    CAPTURE_STATE_CAPTURED    = 2
+    CAPTURE_STATE_RETRIEVING  = 3
+    CAPTURE_STATE_RETRIEVED   = 4
 
     def __init__(self, control_mcast_client):
 
@@ -52,20 +54,36 @@ class CameraController(object):
 
     def controller_callback(self):
 
+        self.handle_capture_state()
+
+        self.monitor_camera_state()
+
+    def handle_capture_state(self):
+
         # Validate the current capture state and check if any pending captures are running
-        if self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
+
+        if self.capture_state == CameraController.CAPTURE_STATE_IDLE:
+            # Do nothing
+            pass
+
+        elif self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
             num_cameras_capturing = sum([(enabled and (state == CameraController.CAPTURE_STATE_CAPTURING))
                 for (enabled, state) in zip(self.camera_enabled[1:], self.camera_capture_state[1:])])
             capture_elapsed_time = time.time() - self.capture_time
             if num_cameras_capturing > 0:
                 if capture_elapsed_time > self.capture_timeout:
-                    self.capture_status = "Captured timedout out on {} cameras".format(num_cameras_capturing)
+                    self.capture_status = "Captured timed out out on {} cameras".format(num_cameras_capturing)
                     logging.error(self.capture_status)
                     self.capture_state = CameraController.CAPTURE_STATE_IDLE
             else:
                 self.capture_status = "Camera capture completed OK after {:.3f} secs".format(capture_elapsed_time)
-                logging.info(self.capture_status)
-                self.capture_state = CameraController.CAPTURE_STATE_IDLE #TODO initiate image readback at this point
+                self.do_retrieve()
+
+        elif self.capture_state == CameraController.CAPTURE_STATE_RETRIEVING:
+            pass
+
+
+    def monitor_camera_state(self):
 
         # Run the camera periodic monitoring if enabled
         if self.camera_monitor_enable:
@@ -87,11 +105,11 @@ class CameraController(object):
                     for (enabled, state) in zip(self.camera_enabled[1:], self.camera_state[1:])])
                 if num_enabled_cameras == num_enabled_cameras_alive:
                     self.system_state = CameraController.SYSTEM_STATE_READY
-                    status_flag = ""
+                    status_flag = "Ready"
                 else:
                     self.system_state = CameraController.SYSTEM_STATE_NOT_READY
-                    status_flag = "NOT "
-                self.system_status = "System {}ready, {}/{} cameras alive".format(
+                    status_flag = "NOT ready"
+                self.system_status = "{}, {}/{} cameras alive".format(
                     status_flag, num_enabled_cameras_alive, num_enabled_cameras)
 
                 self.camera_monitor_loop = self.camera_monitor_loop_ratio
@@ -125,9 +143,17 @@ class CameraController(object):
 
         return self.system_status
 
+    def get_capture_state(self):
+
+        return self.capture_state
+
+    def get_capture_status(self):
+
+        return self.capture_status
+
     def do_capture(self):
 
-        # Set the system state to capturing, set the capture time
+        # Set the capture state to capturing, set the capture time
         self.capture_state = CameraController.CAPTURE_STATE_CAPTURING
         self.capture_time = time.time()
         self.capture_status = "Capture in progress"
@@ -139,6 +165,14 @@ class CameraController(object):
 
         self.control_mcast_client.send("capture id=0 test=1")
 
+    def do_retrieve(self):
+
+        # Set the capture state to retrieving, set the capture time
+        self.capture_state = CameraController.CAPTURE_STATE_RETRIEVING
+        self.capture_time = time.time()
+        self.capture_status = "Image retrieve in progress"
+
+        self.control_mcast_client.send("retrieve id=0")
 
     def process_camera_response(self, response):
 

@@ -16,8 +16,6 @@ class SimCamera(object):
         self.logger = logger.get_logger()
         self.logger.debug("Using simulated camera object with ID {}".format(SimCamera.camera_id))
 
-        self.image = None
-
     def __enter__(self):
         return self
 
@@ -31,8 +29,9 @@ class SimCamera(object):
 
         try:
             testcard_file = open(testcard_path, 'r')
-            self.image = testcard_file.read()
-            self.logger.debug("Read test card image file {} OK (length = {})".format(testcard_path, len(self.image)))
+            image_len = output.write(testcard_file.read())
+            self.logger.debug("Read test card image file {} OK (length = {})".format(testcard_path, image_len))
+            testcard_file.close()
         except IOError, e:
             self.logger.error("Unable to read test card image file: {}".format(e))
             raise PiCameraRuntimeError("Unable to read test card image file: {}".format(e))

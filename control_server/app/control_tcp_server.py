@@ -33,9 +33,12 @@ class CameraTcpConnection(object):
     def dispatch_client(self):
         try:
             while True:
-                line = yield self.stream.read_until(b'\n')
-                response = line.strip()
-                self.log('got |%s|' % response)
+                #line = yield self.stream.read_until(b'\n')
+                #response = line.strip()
+                response = yield self.stream.read_bytes(65536, partial=True)
+
+                #self.log('got |%s|' % response)
+                self.log('got response with length %d bytes' % len(response))
                 self.camera_controller.process_camera_response(response)
                 #yield self.stream.write(line)
         except tornado.iostream.StreamClosedError:

@@ -120,7 +120,6 @@ function poll_camera_state()
              }
         }
         camera_enable = response.camera_enable;
-        $('#capture-state span').html(response.system_state);
         $('#system-state').html(response.system_status);
         if (response.system_state == 0) {
             $('#system-state').removeClass('label-success').addClass('label-danger');
@@ -128,6 +127,7 @@ function poll_camera_state()
         else {
             $('#system-state').removeClass('label-danger').addClass('label-success');
         }
+        $('#capture-state').html(response.capture_status);
     });
     setTimeout(poll_camera_state, 1000);
 }

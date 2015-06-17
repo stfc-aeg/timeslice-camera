@@ -29,6 +29,7 @@ class CameraCommandParser(object):
                           'DISCONNECT' : self.disconnect_cmd,
                           'PING'       : self.ping_cmd,
                           'CAPTURE'    : self.capture_cmd,
+                          'RETRIEVE'   : self.retrieve_cmd,
                           'SET'        : self.set_cmd,
                           'GET'        : self.get_cmd,
                         }
@@ -130,6 +131,26 @@ class CameraCommandParser(object):
         self.server.control_connection.send('{} id={}\n'.format(response_cmd, self.server.id))
 
         return capture_ok
+
+    def retrieve_cmd(self, args):
+        self.logger.debug("Retrieve command")
+
+        retrieve_ok = True
+
+        image_size = self.server.get_image_size()
+
+        if image_size <= 0:
+            retrieve_ok = False
+
+        if retrieve_ok:
+            response_cmd = 'retrieve_ack'
+        else:
+            response_cmd = 'retrieve_nack'
+
+        self.server.control_connection.send('{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size))
+        self.server.control_connection.send(self.server.get_image_data())
+
+        return retrieve_ok
 
     def set_cmd(self, args):
         self.logger.debug("Set command")

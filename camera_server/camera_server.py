@@ -8,6 +8,8 @@ import sched
 import os
 import argparse
 import importlib
+import io
+import struct
 
 import logger
 import camera_command_parser
@@ -15,21 +17,6 @@ import control_connection
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
-
-class Camera(object):
-
-    def __init__(self):
-
-        self.logger = logger.get_logger()
-
-        self.logger.debug("Using real camera object")
-
-    def __enter__(self):
-        self.logger.debug("Camera __enter__()", self)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.logger.debug("Camera __exit__")
 
 #class CameraServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer):
 class CameraServer(SocketServer.UDPServer):
@@ -63,6 +50,8 @@ class CameraServer(SocketServer.UDPServer):
 
         self.control_connection = control_connection.ControlConnection()
 
+        self.image_io = io.BytesIO()
+
         self.logger.info("Camera server starting up with ID {}".format(self.id))
 
     def run(self):
@@ -73,12 +62,27 @@ class CameraServer(SocketServer.UDPServer):
     def do_capture(self):
 
         capture_ok = True
+
+        self.image_io.seek(0)
+        self.image_io.truncate()
+        
         try:
-            self.camera.capture('1.jpg')
+            self.camera.capture(self.image_io, format='jpeg', use_video_port=True)
+
         except self.camera_mod.PiCameraRuntimeError, e:
             capture_ok = False
 
         return capture_ok
+
+    def get_image_size(self):
+
+        return self.image_io.tell()
+
+    def get_image_data(self):
+
+        self.image_io.seek(0)
+
+        return self.image_io.read()
 
 class UDPHandler(SocketServer.BaseRequestHandler):
 

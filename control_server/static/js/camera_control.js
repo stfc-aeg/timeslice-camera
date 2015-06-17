@@ -131,3 +131,60 @@ function poll_camera_state()
     });
     setTimeout(poll_camera_state, 1000);
 }
+
+$('#version-info-button').click(function() {
+    $.post('/camera_version', function(data) {
+        // Do nothing
+    });
+});
+
+$('#version-modal').on('shown.bs.modal', function (e) {
+
+    $('#version-modal-content span').html('');
+
+    for (var icam = 0; icam < max_cameras/2; icam++)
+    {
+        $('<div class="row">'+
+            '<div class="col-md-1">'  + (icam+1)  + '</div>'+
+            '<div id="camera-commit-' + (icam+1)  + '" class="col-md-2"> &nbsp; </div>'+
+            '<div id="camera-time-'   + (icam+1)  + '" class="col-md-3"> &nbsp; </div>'+
+            '<div class="col-md-1">'  + (icam+25) + '</div>'+
+            '<div id="camera-commit-' + (icam+25) +'" class="col-md-2"> &nbsp; </div>'+
+            '<div id="camera-time-'   + (icam+25) +'" class="col-md-3"> &nbsp; </div>'+
+          '</div>').appendTo('#version-modal-content span');
+    }
+    update_camera_version_info();
+});
+
+$('#version-modal-refresh').click(function() {
+    $.post('/camera_version', function(data)
+    {
+        setTimeout(update_camera_version_info, 1000);
+    });
+});
+
+function update_camera_version_info()
+{
+    $.getJSON('/camera_version', function(response)
+    {
+        var loop_len = response.camera_version_time.length;
+        for (var icam = 0; icam < loop_len; icam++)
+        {
+            $('#camera-commit-'+(icam+1)).html(response.camera_version_commit[icam]);
+            $('#camera-time-'+(icam+1)).html(date_from_unix_time(response.camera_version_time[icam]));
+        }
+    });
+
+}
+
+function date_from_unix_time(unix_time)
+{
+    var date_str;
+    if (unix_time == 0) {
+        date_str = '-';
+    } else {
+        the_date = new Date(parseInt(unix_time) * 1000);
+        date_str = the_date.toLocaleString();
+    }
+    return date_str;
+}

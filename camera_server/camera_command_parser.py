@@ -25,9 +25,9 @@ class CameraCommandParser(object):
     def __init__(self, server):
 
         # Define dictionary of legal commands and assoicated methods
-        self.commands = { 'CONNECT'    : self.connect_cmd,
-                          'DISCONNECT' : self.disconnect_cmd,
+        self.commands = {
                           'PING'       : self.ping_cmd,
+                          'VERSION'    : self.version_cmd,
                           'CAPTURE'    : self.capture_cmd,
                           'RETRIEVE'   : self.retrieve_cmd,
                           'SET'        : self.set_cmd,
@@ -95,14 +95,6 @@ class CameraCommandParser(object):
 
         return cmd_ok
 
-    def connect_cmd(self, args):
-        self.logger.debug("Connect command")
-        return True
-
-    def disconnect_cmd(self, args):
-        self.logger.debug("Disconnect command")
-        return True
-
     @hasRequiredParams(['host', 'port'])
     def ping_cmd(self, args):
 
@@ -115,6 +107,16 @@ class CameraCommandParser(object):
             self.server.control_connection.connect(host, port)
 
         self.server.control_connection.send('ping_ack id={}\n'.format(self.server.id))
+
+        return cmd_ok
+
+    def version_cmd(self, args):
+
+        cmd_ok = True
+        self.logger.debug("Version command")
+
+        self.server.control_connection.send('version_ack id={} commit={} time={}'.format(
+            self.server.id, self.server.version_hash, self.server.version_time))
 
         return cmd_ok
 

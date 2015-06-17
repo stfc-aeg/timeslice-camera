@@ -30,12 +30,14 @@ class CameraController(object):
 
         self.camera_state = [CameraController.CAMERA_STATE_DEAD]  * (CameraController.MAX_CAMERAS+1)
         self.camera_last_ping_time = [0.0] * (CameraController.MAX_CAMERAS+1)
+        self.camera_version_info   = [('unknown', '0')] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled[1] = 1
         self.camera_enabled[2] = 1
 
         self.camera_capture_state = [CameraController.CAPTURE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
         self.capture_time = 0.0
+        self.retrieve_time = 0.0
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
         self.capture_status = "Idle"
 
@@ -45,6 +47,7 @@ class CameraController(object):
 
         self.camera_max_ping_age = 2.0
         self.capture_timeout = 5.0
+        self.retrieve_timeout = 5.0
 
         self.controller_period = 100
         self.controller = tornado.ioloop.PeriodicCallback(self.controller_callback, self.controller_period)
@@ -67,21 +70,34 @@ class CameraController(object):
             pass
 
         elif self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
-            num_cameras_capturing = sum([(enabled and (state == CameraController.CAPTURE_STATE_CAPTURING))
-                for (enabled, state) in zip(self.camera_enabled[1:], self.camera_capture_state[1:])])
+            # num_cameras_capturing = sum([(enabled and (state == CameraController.CAPTURE_STATE_CAPTURING))
+            #     for (enabled, state) in zip(self.camera_enabled[1:], self.camera_capture_state[1:])])
+            num_cameras_capturing = self.get_num_enabled_in_state(CameraController.CAPTURE_STATE_CAPTURING, self.camera_capture_state)
             capture_elapsed_time = time.time() - self.capture_time
             if num_cameras_capturing > 0:
                 if capture_elapsed_time > self.capture_timeout:
-                    self.capture_status = "Captured timed out out on {} cameras".format(num_cameras_capturing)
+                    self.capture_status = "Captured timed out on {} cameras".format(num_cameras_capturing)
                     logging.error(self.capture_status)
                     self.capture_state = CameraController.CAPTURE_STATE_IDLE
             else:
                 self.capture_status = "Camera capture completed OK after {:.3f} secs".format(capture_elapsed_time)
+                logging.info(self.capture_status)
                 self.do_retrieve()
 
         elif self.capture_state == CameraController.CAPTURE_STATE_RETRIEVING:
-            pass
 
+            num_cameras_retrieving = self.get_num_enabled_in_state(CameraController.CAPTURE_STATE_RETRIEVING, self.camera_capture_state)
+            retrieve_elapsed_time = time.time() - self.retrieve_time
+            if num_cameras_retrieving > 0:
+                if retrieve_elapsed_time > self.retrieve_timeout:
+                    self.capture_status = "Retrieve timed out on {} cameras".format(num_cameras_retrieving)
+                    logging.error(self.capture_status)
+                    self.capture_state = CameraController.CAPTURE_STATE_IDLE
+            else:
+                self.capture_status = "Image retrieve completed OK after {:.3f} secs".format(retrieve_elapsed_time)
+                logging.info(self.capture_status)
+                #self.do_generate_movie()
+                self.capture_state = CameraController.CAPTURE_STATE_IDLE
 
     def monitor_camera_state(self):
 
@@ -113,6 +129,11 @@ class CameraController(object):
                     status_flag, num_enabled_cameras_alive, num_enabled_cameras)
 
                 self.camera_monitor_loop = self.camera_monitor_loop_ratio
+
+    def get_num_enabled_in_state(self, desired_state, object_state):
+
+        return sum([(enabled and (state == desired_state))
+            for (enabled, state) in zip(self.camera_enabled[1:], object_state[1:])])
 
     def enable_camera_monitor(self, enable):
 
@@ -151,6 +172,10 @@ class CameraController(object):
 
         return self.capture_status
 
+    def get_camera_version_info(self):
+
+        return self.camera_version_info[1:]
+
     def do_capture(self):
 
         # Set the capture state to capturing, set the capture time
@@ -169,8 +194,13 @@ class CameraController(object):
 
         # Set the capture state to retrieving, set the capture time
         self.capture_state = CameraController.CAPTURE_STATE_RETRIEVING
-        self.capture_time = time.time()
+        self.retrieve_time = time.time()
         self.capture_status = "Image retrieve in progress"
+
+        # Set state of enabled cameras to retrieving
+        for camera in range(1, CameraController.MAX_CAMERAS+1):
+            if self.camera_enabled[camera]:
+                self.camera_capture_state[camera] = CameraController.CAPTURE_STATE_RETRIEVING
 
         self.control_mcast_client.send("retrieve id=0")
 
@@ -185,10 +215,18 @@ class CameraController(object):
         else:
             self.camera_last_ping_time[id] = time.time()
 
+    def update_camera_version_info(self, id, commit, time):
+
+        if id < 1 or id > CameraController.MAX_CAMERAS:
+            logging.warning("Got version response for illegal ID: {}".format(id))
+        else:
+            self.camera_version_info[id] = (commit, time)
+
+
     def update_camera_capture_state(self, id, did_ack):
 
         if id < 1 or id > CameraController.MAX_CAMERAS:
-            logging.warning("Got camera capture response for illegal ID: {}", format(id))
+            logging.warning("Got camera capture response for illegal ID: {}".format(id))
         else:
             if self.camera_capture_state[id] != CameraController.CAPTURE_STATE_CAPTURING:
                 logging.warning("Got capture response for camera ID {} when not in capturing state".format(id))
@@ -196,3 +234,22 @@ class CameraController(object):
                 logging.warning("Camera ID {} responded with no-acknowledge for capture command".format(id))
 
             self.camera_capture_state[id] = CameraController.CAPTURE_STATE_CAPTURED
+
+    def update_camera_retrieve_state(self, id, did_ack, image_data):
+
+        if id < 0 or id > CameraController.MAX_CAMERAS:
+            logging.warning("Got camera retrieve response for illegal ID: {}".format(id))
+        else:
+            if self.camera_capture_state[id] != CameraController.CAPTURE_STATE_RETRIEVING:
+                logging.warning("Got retrieve response for camera ID {} when not in retrieving state".format(id))
+            elif not did_ack:
+                logging.warning("Camera ID {} responded with no-acknowledge for retrieve command".format(id))
+
+            self.camera_capture_state[id] = CameraController.CAPTURE_STATE_RETRIEVED
+
+            if image_data is not None and len(image_data) > 0:
+                image_file_name = "/tmp/image_{:02d}.jpg".format(id)
+                image_file = open(image_file_name, 'wb')
+                image_file.write(image_data)
+                image_file.close()
+                logging.info("Wrote image data for camera {} to file {}".format(id, image_file_name))

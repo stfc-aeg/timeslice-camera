@@ -10,6 +10,7 @@ import argparse
 import importlib
 import io
 import struct
+import sys
 
 import logger
 import camera_command_parser
@@ -52,7 +53,10 @@ class CameraServer(SocketServer.UDPServer):
 
         self.image_io = io.BytesIO()
 
-        self.logger.info("Camera server starting up with ID {}".format(self.id))
+        self.version_hash, self.version_time = get_version()
+
+        self.logger.info("Camera server starting up with ID {} (version {} {})".format(
+            self.id, self.version_hash, time.ctime(int(self.version_time))))
 
     def run(self):
 
@@ -65,7 +69,7 @@ class CameraServer(SocketServer.UDPServer):
 
         self.image_io.seek(0)
         self.image_io.truncate()
-        
+
         try:
             self.camera.capture(self.image_io, format='jpeg', use_video_port=True)
 
@@ -95,10 +99,17 @@ class UDPHandler(SocketServer.BaseRequestHandler):
         self.server.command_parser.parse_command(data)
 
 
+def get_version():
+
+    vers_info = subprocess.check_output(['git', 'log', '-1', '--pretty=\'%h %ct\'']).strip().lstrip('\'').rstrip('\'').split()
+    return vers_info
+
 def parse_args():
 
     parser = argparse.ArgumentParser(description="Timeslice camera server")
 
+    parser.add_argument('--version', action="store_true",
+                        help="Display version information")
     parser.add_argument('--id', action="store", dest="id", type=int, default=0,
                         help="Camera ID, use IP address offset to resolve if specified")
     parser.add_argument('--idoffset', action="store", dest="idoffset", type=int, default=50,
@@ -115,6 +126,11 @@ def parse_args():
                         help="Set the logging level")
 
     args = parser.parse_args()
+
+    if args.version:
+        hash, commit_time = get_version()
+        print "Commit {} at {}".format(hash, time.ctime(int(commit_time)))
+        sys.exit(0)
 
     if args.id == 0:
         ipaddr = socket.gethostbyname(socket.gethostname())

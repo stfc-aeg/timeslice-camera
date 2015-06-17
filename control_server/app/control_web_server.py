@@ -11,17 +11,13 @@ import logging
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
-        #self.write("Hello, world!\n")
         self.redirect("/static/html/camera_control.html")
 
 class CaptureHandler(tornado.web.RequestHandler):
 
 
     def post(self):
-        #self.application.control_mcast_client.send("capture test=1")
         self.application.camera_controller.do_capture()
-        #time.sleep(2.0)
-        #self.write("Capture complete!")
 
 class MonitorHandler(tornado.web.RequestHandler):
 
@@ -34,6 +30,21 @@ class MonitorHandler(tornado.web.RequestHandler):
         enable = True if self.get_query_argument('enable', default='0') == '1' else False
         self.application.camera_controller.enable_camera_monitor(enable)
         logging.info("Setting camera state monitor enable to {}".format(enable))
+
+class CameraVersionHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        self.application.camera_controller.control_mcast_client.send("version id=0")
+
+    def get(self):
+        version_info = self.application.camera_controller.get_camera_version_info()
+
+        response = {}
+        response['camera_version_commit'] = [elems[0] for elems in version_info]
+        response['camera_version_time']   = [elems[1] for elems in version_info]
+
+        self.set_header("Content-Type", "application/json")
+        self.write(json.dumps(response))
 
 class CameraStateHandler(tornado.web.RequestHandler):
 
@@ -69,6 +80,7 @@ class CameraWebServer(object):
             (r"/", MainHandler),
             (r"/capture", CaptureHandler),
             (r"/monitor", MonitorHandler),
+            (r"/camera_version", CameraVersionHandler),
             (r"/camera_state", CameraStateHandler),
             (r"/camera_enable", CameraEnableHandler),
         ], **settings)

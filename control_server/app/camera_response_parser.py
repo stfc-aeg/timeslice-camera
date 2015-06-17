@@ -9,9 +9,11 @@ class CameraResponseParser(object):
 
         # Define dictionary of legal responses and assoicated methods
         self.responses = { 'PING_ACK'       : self.ping_ack_response,
+                           'VERSION_ACK'    : self.version_ack_response,
                            'CAPTURE_ACK'    : self.capture_ack_response,
                            'CAPTURE_NACK'   : self.capture_nack_response,
                            'RETRIEVE_ACK'   : self.retrieve_ack_response,
+                           'RETRIEVE_NACK'  : self.retrieve_nack_response,
                         }
 
     def parse_response(self, response_data):
@@ -52,7 +54,7 @@ class CameraResponseParser(object):
 
             except ValueError:
                 response_ok = False
-                logging.error("Illegal parameter format") #: {}".format(response_data))
+                logging.error("Illegal parameter format: {}".format(response_data))
 
         else:
             response_ok = False
@@ -65,6 +67,22 @@ class CameraResponseParser(object):
         logging.debug("Got ping response from camera {}, args={}".format(id, args))
         self.camera_controller.update_camera_last_ping_time(id)
 
+    def version_ack_response(self, id, args, raw_data):
+
+        logging.debug("Got version response from camera {}, args={}".format(id, args))
+
+        if 'commit' in args:
+            commit = args['commit']
+        else:
+            commit = 'unknown'
+
+        if 'time' in args:
+            time = args['time']
+        else:
+            time = '0'
+
+        self.camera_controller.update_camera_version_info(id, commit, time)
+
     def capture_ack_response(self, id, args, raw_data):
 
         logging.debug("Got capture acknowledge from camera {}, args={}".format(id, args))
@@ -72,7 +90,7 @@ class CameraResponseParser(object):
 
     def capture_nack_response(self, id, args, raw_data):
 
-        logging.debug("Got capture no-acknowledge for camera {}, args={}".format(id, args))
+        logging.error("Got capture no-acknowledge for camera {}, args={}".format(id, args))
         self.camera_controller.update_camera_capture_state(id, False)
 
     def retrieve_ack_response(self, id, args, raw_data):
@@ -80,9 +98,13 @@ class CameraResponseParser(object):
         image_len = len(raw_data)
 
         if image_len:
-            logging.info("Got retrieve acknowledge from camera {}, image length={}".format(id,image_len))
-            image_file = open("image_{:02d}.jpg".format(id), 'wb')
-            image_file.write(raw_data)
-            image_file.close()
+            logging.debug("Got retrieve acknowledge from camera {}, image length={}".format(id,image_len))
         else:
-            logging.error("Got retrieve acknowledge from camera {} but no image data associated with it".format(id))
+            logging.error("Got retrieve acknowledge from camera {} but with no image data".format(id))
+
+        self.camera_controller.update_camera_retrieve_state(id, True, raw_data)
+
+    def retrieve_nack_response(self, id, args, raw_data):
+
+        logging.error("Got retrieve no-acknowledge for camera {}, args={}".format(id, args))
+        self.camera_controller.update_camera_retrieve_state(id, False, None)

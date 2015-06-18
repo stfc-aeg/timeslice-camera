@@ -61,7 +61,23 @@ class CameraServer(SocketServer.UDPServer):
     def run(self):
 
         with self.camera_type() as self.camera:
+            
+            self.init_camera_defaults()
             self.serve_forever()
+            
+    def init_camera_defaults(self):
+        
+        self.camera.resolution = (1920,1080)
+        self.camera.framerate = 30
+        self.camera.shutter_speed = 3000
+        self.camera.iso = 800
+        self.camera.exposure_mode = 'fixedfps'
+        self.camera.color_effects = None
+        self.camera.contrast = 0
+        self.camera.drc_strength = 'off'
+        self.camera.awb_mode = 'off'
+        self.camera.awb_gains = (1.5, 1.5)
+        self.camera.brightness = 50
 
     def do_capture(self):
 

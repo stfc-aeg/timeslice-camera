@@ -24,10 +24,12 @@ class CameraController(object):
     CAPTURE_STATE_RETRIEVED   = 4
     CAPTURE_STATE_RENDERING   = 5
 
-    def __init__(self, control_mcast_client):
+    def __init__(self, control_mcast_client, control_addr, control_port):
 
         self.control_mcast_client = control_mcast_client
-
+        self.control_addr = control_addr
+        self.control_port = control_port
+        
         self.response_parser = camera_response_parser.CameraResponseParser(self)
 
         self.system_state = CameraController.SYSTEM_STATE_NOT_READY
@@ -158,7 +160,7 @@ class CameraController(object):
             if self.camera_monitor_loop == 0:
 
                 logging.debug("Camera monitor fired")
-                self.control_mcast_client.send("ping id=0 host=127.0.0.1 port=8008")
+                self.control_mcast_client.send("ping id=0 host={} port={}".format(self.control_addr, self.control_port))
 
                 now = time.time()
                 for camera in range(1, CameraController.MAX_CAMERAS+1):

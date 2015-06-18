@@ -141,9 +141,10 @@ class CameraCommandParser(object):
         else:
             response_cmd = 'preview_nack'
 
-        self.server.control_connection.send('{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size))
-        self.server.control_connection.send(self.server.get_image_data())
-
+        response = '{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size)
+        response = response + self.server.get_image_data()
+        self.server.control_connection.send(response)
+        
         return preview_ok
 
     def capture_cmd(self, args):
@@ -176,8 +177,9 @@ class CameraCommandParser(object):
         else:
             response_cmd = 'retrieve_nack'
 
-        self.server.control_connection.send('{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size))
-        self.server.control_connection.send(self.server.get_image_data())
+        response = '{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size) 
+        response = response + self.server.get_image_data()
+        self.server.control_connection.send(response)
 
         return retrieve_ok
 

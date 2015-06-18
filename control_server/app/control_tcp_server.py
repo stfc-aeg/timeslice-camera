@@ -1,6 +1,7 @@
 import socket
 import os
 import logging
+import struct
 
 import tornado.gen
 import tornado.iostream
@@ -31,16 +32,23 @@ class CameraTcpConnection(object):
 
     @tornado.gen.coroutine
     def dispatch_client(self):
+        
+        hdr_fmt = '<L'
+        hdr_size = struct.calcsize(hdr_fmt)
+        data_size = 0
+        
         try:
             while True:
-                #line = yield self.stream.read_until(b'\n')
-                #response = line.strip()
-                response = yield self.stream.read_bytes(65536, partial=True)
+                # Read the message size header first
+                hdr = yield self.stream.read_bytes(hdr_size)
+                data_size = struct.unpack(hdr_fmt, hdr)[0]
 
-                #self.log('got |%s|' % response)
+                # Read the message itself                    
+                response = yield self.stream.read_bytes(data_size)
+
                 self.log('got response with length %d bytes' % len(response))
                 self.camera_controller.process_camera_response(response)
-                #yield self.stream.write(line)
+
         except tornado.iostream.StreamClosedError:
             pass
 

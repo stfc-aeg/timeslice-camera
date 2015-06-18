@@ -28,7 +28,7 @@ def main():
     logging.info("Camera control multicast client created on %s:%d..." % (options.mcast_group, options.mcast_port))
 
     # Launch the camera controller
-    camera_controller = app.camera_controller.CameraController(control_mcast_client)
+    camera_controller = app.camera_controller.CameraController(control_mcast_client, options.ctrl_addr, options.ctrl_port)
 
     # Launch the HTTP server app for the control UI
     control_web_server = app.control_web_server.CameraWebServer(camera_controller)

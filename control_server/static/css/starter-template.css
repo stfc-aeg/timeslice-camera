@@ -12,6 +12,10 @@ body {
 }
 
 img.resize {
-    max-width: 50%;
-    max-size:  50%;
+    max-width: 70%;
+    max-size:  70%;
+}
+
+img.padded {
+    padding: 10px;
 }

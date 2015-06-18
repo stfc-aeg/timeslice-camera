@@ -3,6 +3,7 @@ import logging
 import time
 import subprocess
 import shlex
+import os
 
 import camera_response_parser
 
@@ -60,7 +61,11 @@ class CameraController(object):
         self.preview_id = 0
         self.preview_image = ''
 
-        self.camera_max_ping_age = 2.0
+        default_preview_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../static/img/testcard.jpg"))
+        with open(default_preview_file, 'rb') as preview_file:
+            self.preview_image = preview_file.read()
+
+        self.camera_max_ping_age = 4.0
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
         self.render_timeout = 5.0

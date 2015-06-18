@@ -128,7 +128,7 @@ def parse_args():
                         help="Display version information")
     parser.add_argument('--id', action="store", dest="id", type=int, default=0,
                         help="Camera ID, use IP address offset to resolve if specified")
-    parser.add_argument('--idoffset', action="store", dest="idoffset", type=int, default=50,
+    parser.add_argument('--idoffset', action="store", dest="idoffset", type=int, default=100,
                         help="Offset value used to resolve camera ID from IP address")
     parser.add_argument('--mcast_group', action="store", dest="mcast_group", default=MCAST_GRP,
                         help="Multicast group for camera server to bind to")

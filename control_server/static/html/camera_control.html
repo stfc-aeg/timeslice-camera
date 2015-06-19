@@ -47,7 +47,80 @@
 
     <div class="container">
 
-        <div class="starter-template">
+        <div class="camera-control">
+        
+            <div class="row">
+            	<div class="col-md-6">
+	                <div id="capture" class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Timeslice Capture</h3>
+                        </div>
+                        <div class="panel-body" style="height:100%">
+                            <div>
+                                <h4>Capture state: <span id="capture-state" class="label label-success">Test</span></h4>
+                            </div>
+                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
+                                Capture
+                            </button>
+                        </div>
+                    </div><!-- /.capture -->
+            	</div>
+            	<div class="col-md-6">
+	                <div id="config" class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Camera Configuration</h3>
+                        </div>
+                        <div class="panel-body" style="height:100%">
+	                        <div class="container-fluid">
+	                        	<div class="row">
+	                        		<div class="col-md-4">
+	                        			<div><label><b>Resolution:</b></label></div>
+	                        			<select id="config-resolution-select" class="form-control input-sm">
+	                        				<option>2592×1944</option>
+	                        				<option selected>1920x1080</option>
+	                        				<option>1296×972</option> 
+	                        				<option>1296×730</option>
+	                        				<option>1280x720</option>
+	                        				<option>1024x768</option>
+	                        				<option>640×480</option>
+	                        			</select>
+	                        		</div>
+	                        		<div class="col-md-4">
+                    			        <div><label><b>ISO:</b></label></div>
+	                        			<select id="config-iso-select" class="form-control input-sm">
+											<option>100</option>
+											<option>200</option>
+											<option>320</option>
+											<option>400</option>
+											<option>500</option>
+											<option>640</option>
+											<option selected>800</option>
+	                        			</select>                        		
+	                        		</div>
+	                        		<div class="col-md-4">
+                    			        <div><label><b>Shutter (1/s):</b></label></div>
+	                        			<select id="config-shutter-select" class="form-control input-sm">
+	                        				<option>3000</option>
+		                        			<option>1000</option>
+											<option>500</option>
+											<option>250</option>
+											<option>125</option>
+											<option>60</option>
+											<option>30</option>
+											<option>15</option>
+											<option>8</option>
+											<option>4</option>
+											<option>2</option>
+											<option>1</option>
+	                        			</select>                        		
+	                        		</div>
+	                        	</div>
+	                        </div>
+                        </div>
+                    </div><!-- /.config -->
+            	</div>
+            </div>
+            
             <div class="row">
 
                 <div class="col-md-6">
@@ -55,7 +128,7 @@
                         <div class="panel-heading">
                             <h3 class="panel-title">System Status</h3>
                         </div>
-                        <div class="panel-body">
+                        <div class="panel-body" style="height:100%">
                             <div>
                                 <h4>System state: <span id="system-state" class="label label-danger">&nbsp;</span></h4>
                             </div>
@@ -81,7 +154,7 @@
                             <div class="panel-heading">
                                 <h3 class="panel-title">Camera Preview</h3>
                             </div>
-                            <div class="panel-body">
+                            <div class="panel-body" style="height:100%">
                                 <div class="container-fluid">
                                     <div class="row">
                                         <div class="col-md-4">
@@ -105,28 +178,15 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <img id="preview-image" class="resize padded loadlater" src="/preview" data-src="/preview">
+                                            <a href="/preview" target="_blank">
+                                            	<img id="preview-image" class="resize padded loadlater" src="/preview" data-src="/preview">
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div> <!-- /.preview -->
-
-                    <div id="capture" class="panel panel-primary">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Timeslice Capture</h3>
-                        </div>
-                        <div class="panel-body">
-                            <div>
-                                <h4>Capture state: <span id="capture-state" class="label label-success">Test</span></h4>
-                            </div>
-                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
-                                Capture
-                            </button>
-                        </div>
-                    </div><!-- /.capture -->
                 </div>
-
             </div> <!-- /.row -->
         </div><!-- /.starter-template -->
     </div><!-- /.container -->

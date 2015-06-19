@@ -83,6 +83,14 @@ class CameraEnableHandler(tornado.web.RequestHandler):
         logging.info("Got camera enable POST request of type {}".format(self.request.headers["Content-Type"]))
         json_args = json.loads(self.request.body)
         self.application.camera_controller.set_camera_enable(json_args['camera_enable'])
+        
+class ConfigHandler(tornado.web.RequestHandler):
+    
+    def post(self):
+        logging.info("Got config POST request with query arguments {}".format(self.request.query_arguments))
+        
+    def get(self):
+        logging.info("Got config GET request with query arguments {}".format(self.request.query_arguments))
 
 class CameraWebServer(object):
 
@@ -100,6 +108,7 @@ class CameraWebServer(object):
             (r"/camera_version", CameraVersionHandler),
             (r"/camera_state", CameraStateHandler),
             (r"/camera_enable", CameraEnableHandler),
+            (r"/config", ConfigHandler),
         ], **settings)
 
 

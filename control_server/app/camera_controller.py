@@ -128,15 +128,15 @@ class CameraController(object):
 
             if render_state is None:
                 if render_elapsed_time > self.render_timeout:
-                    self.capture_status = "Movie render timed out"
+                    self.capture_status = "Timeslice render timed out"
                     self.capture_state = CameraController.CAPTURE_STATE_IDLE
             else:
                 (render_stdout, render_stderr) = self.render_process.communicate()
                 if render_state == 0:
-                    self.capture_status = "Movie render completed OK after {:.3f} secs".format(render_elapsed_time)
+                    self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
                     logging.info(self.capture_status)
                 else:
-                    self.capture_state = "Movie render failed with return code {}".format(render_state)
+                    self.capture_state = "Timeslice render failed with return code {}".format(render_state)
                     logging.error(self.capture_status)
                     logging.error("Render output:\n{}\n{}".format(render_stdout, render_stderr))
 
@@ -270,7 +270,7 @@ class CameraController(object):
 
         self.capture_state = CameraController.CAPTURE_STATE_RENDERING
         self.render_time = time.time()
-        self.capture_status = "Movie render in progress"
+        self.capture_status = "Timeslice render in progress"
 
         render_cmd = "ffmpeg -framerate 2 -i \'/tmp/image_%02d.jpg\' -codec copy -y /tmp/timeslice.mkv"
         logging.info("Launching render process with command: {}".format(render_cmd))

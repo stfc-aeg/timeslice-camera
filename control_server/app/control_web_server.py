@@ -35,6 +35,9 @@ class PreviewHandler(tornado.web.RequestHandler):
 
     def get(self):
         self.set_header("Content-Type", "image/jpeg")
+        self.set_header("Pragma", "no-cache")
+        self.set_header("Expires", "Fri, 30 Oct 1998 14:19:41 GMT")
+        self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.write(self.application.camera_controller.get_preview_image())
 
     def post(self):

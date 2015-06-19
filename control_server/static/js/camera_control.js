@@ -45,22 +45,17 @@ function post_preview_change()
     preview_enable = $("[name='preview-enable-checkbox']").bootstrapSwitch('state');
     preview_camera_select = $('#preview-camera-select').val();
     preview_update_time = parseInt($('#preview-update-rate').val());
-    console.log("preview enable: " + preview_enable + " camera: " + preview_camera_select + " rate: " + preview_update_time);
-
     $.post("/preview?enable=" + (preview_enable == true ? 1 : 0) + "&camera=" + preview_camera_select + "&update=" + preview_update_time);
-
 }
 
 poll_preview_image();
 
 function poll_preview_image()
 {
-    console.log("poll_preview_image");
     if (preview_enable) {
-        // $.get('/preview', function(data) {
-        //     $('#preview-image-info').html(data);
-        // });
-        $("#preview-image").attr("src", $('#preview-image').attr('data-src'))
+        d = new Date();
+        $("#preview-image").attr("src", $('#preview-image').attr('data-src') + '?' + d.getTime());
+        
     }
     setTimeout(poll_preview_image, preview_update_time * 1000);
 }

@@ -55,7 +55,7 @@ function poll_preview_image()
     if (preview_enable) {
         d = new Date();
         $("#preview-image").attr("src", $('#preview-image').attr('data-src') + '?' + d.getTime());
-        
+
     }
     setTimeout(poll_preview_image, preview_update_time * 1000);
 }
@@ -224,4 +224,48 @@ function date_from_unix_time(unix_time)
         date_str = the_date.toLocaleString();
     }
     return date_str;
+}
+
+update_camera_config();
+
+function update_camera_config()
+{
+    $.getJSON('/camera_config', function(response)
+    {
+        $(function() {
+            $('#config-resolution-select option').filter(function() {
+                return ($(this).text() == response.resolution);
+            }).prop('selected', true);
+        });
+        $(function() {
+            $('#config-iso-select option').filter(function() {
+                return ($(this).text() == response.iso);
+            }).prop('selected', true);
+        });
+        $(function() {
+            $('#config-shutter-select option').filter(function() {
+                return ($(this).text() == response.shutter_speed);
+            }).prop('selected', true);
+        });
+    });
+}
+
+$('#config-resolution-select').change(function() {
+    post_config_change("resolution", $(this).val());
+});
+
+$('#config-iso-select').change(function() {
+    post_config_change("iso", $(this).val());
+});
+
+$('#config-shutter-select').change(function() {
+    post_config_change("shutter_speed", $(this).val());
+});
+
+function post_config_change(param, value)
+{
+    console.log("Posting config change: param: " + param + " value: " + value);
+    $.post("/camera_config?" + param + "=" + value, function(data) {
+
+    });
 }

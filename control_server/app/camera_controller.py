@@ -29,7 +29,7 @@ class CameraController(object):
         self.control_mcast_client = control_mcast_client
         self.control_addr = control_addr
         self.control_port = control_port
-        
+
         self.response_parser = camera_response_parser.CameraResponseParser(self)
 
         self.system_state = CameraController.SYSTEM_STATE_NOT_READY
@@ -41,6 +41,20 @@ class CameraController(object):
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled[1] = 1
         self.camera_enabled[2] = 1
+
+        self.camera_params = {
+            'resolution'    : '1920x1080',
+            'framerate'     : '30',
+            'shutter_speed' : '3000',
+            'iso'           : '800',
+            'exposure_mode' : 'fixedfps',
+            'color_effects' : 'None',
+            'contrast'      : '0',
+            'drc_strength'  : 'off',
+            'awb_mode'      : 'off',
+            'awb_gains'     : '1.5,1.5',
+            'brightness'    : '50'
+        }
 
         self.camera_capture_state = [CameraController.CAPTURE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
@@ -231,6 +245,29 @@ class CameraController(object):
     def get_preview_image(self):
 
         return self.preview_image
+
+    def set_camera_params(self, params):
+
+        print params
+        for param in params:
+            if param in self.camera_params:
+                self.camera_params[param] = params[param][-1]
+            else:
+                logging.warning("Attempting to set unknown camera parameter: {}".format(param))
+
+    def get_camera_params(self, params):
+
+        response = {}
+        if params == []:
+            response = self.camera_params
+        else:
+            for param in params:
+                if param in self.camera_params:
+                    response[param] = self.camera_params[param]
+                else:
+                    logging.warning("Unknown camera parameter requested: {}".format(param))
+
+        return response
 
     def set_preview_mode(self, enable, camera, update):
 

@@ -31,7 +31,7 @@ class CameraCommandParser(object):
                           'PREVIEW'    : self.preview_cmd,
                           'CAPTURE'    : self.capture_cmd,
                           'RETRIEVE'   : self.retrieve_cmd,
-                          'SET'        : self.set_cmd,
+                          'CONFIGURE'  : self.configure_cmd,
                           'GET'        : self.get_cmd,
                         }
 
@@ -144,7 +144,7 @@ class CameraCommandParser(object):
         response = '{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size)
         response = response + self.server.get_image_data()
         self.server.control_connection.send(response)
-        
+
         return preview_ok
 
     def capture_cmd(self, args):
@@ -177,18 +177,31 @@ class CameraCommandParser(object):
         else:
             response_cmd = 'retrieve_nack'
 
-        response = '{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size) 
+        response = '{} id={} size={} raw_data='.format(response_cmd, self.server.id, image_size)
         response = response + self.server.get_image_data()
         self.server.control_connection.send(response)
 
         return retrieve_ok
 
-    def set_cmd(self, args):
-        self.logger.debug("Set command: {}".format(args))
+    def configure_cmd(self, args):
+        self.logger.debug("Configure command")
+
+        set_ok = True
+        self.logger.debug("Configure command: {}".format(args))
         for param, val in args.iteritems():
             if param != 'id':
-                self.server.set_camera_param(param, val)
-        return True
+                param_ok = self.server.set_camera_param(param, val)
+                if not param_ok:
+                    set_ok = False
+
+        if set_ok:
+            response_cmd = "configure_ack"
+        else:
+            response_cmd = "configure_nack"
+
+        self.server.control_connection.send('{} id={}\n'.format(response_cmd, self.server.id))
+
+        return set_ok
 
     def get_cmd(self, args):
         self.logger.debug("Get command")

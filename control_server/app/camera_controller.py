@@ -17,12 +17,16 @@ class CameraController(object):
     CAMERA_STATE_DEAD  = 0
     CAMERA_STATE_ALIVE = 1
 
+    CONFIGURE_STATE_NOT_READY   = 0
+    CONFIGURE_STATE_CONFIGURING = 1
+    CONFIGURE_STATE_READY       = 2
+
     CAPTURE_STATE_IDLE        = 0
-    CAPTURE_STATE_CAPTURING   = 1
-    CAPTURE_STATE_CAPTURED    = 2
-    CAPTURE_STATE_RETRIEVING  = 3
-    CAPTURE_STATE_RETRIEVED   = 4
-    CAPTURE_STATE_RENDERING   = 5
+    CAPTURE_STATE_CAPTURING   = 2
+    CAPTURE_STATE_CAPTURED    = 3
+    CAPTURE_STATE_RETRIEVING  = 4
+    CAPTURE_STATE_RETRIEVED   = 5
+    CAPTURE_STATE_RENDERING   = 6
 
     def __init__(self, control_mcast_client, control_addr, control_port):
 
@@ -46,7 +50,7 @@ class CameraController(object):
             'resolution'    : '1920x1080',
             'framerate'     : '30',
             'shutter_speed' : '3000',
-            'iso'           : '800',
+            'iso'           : '100',
             'exposure_mode' : 'fixedfps',
             'color_effects' : 'None',
             'contrast'      : '0',
@@ -60,6 +64,11 @@ class CameraController(object):
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
         self.capture_status = "Idle"
 
+        self.camera_configure_state = [CameraController.CONFIGURE_STATE_NOT_READY] * (CameraController.MAX_CAMERAS+1)
+        self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
+        self.configure_status = "Not ready"
+
+        self.configure_time = 0.0
         self.capture_time = 0.0
         self.retrieve_time = 0.0
         self.render_time = 0.0
@@ -82,6 +91,7 @@ class CameraController(object):
             self.preview_image = preview_file.read()
 
         self.camera_max_ping_age = 4.0
+        self.configure_timeout = 5.0
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
         self.render_timeout = 5.0
@@ -94,9 +104,26 @@ class CameraController(object):
 
     def controller_callback(self):
 
+        self.handle_configure_state()
         self.handle_capture_state()
         self.handle_preview_update()
         self.monitor_camera_state()
+
+    def handle_configure_state(self):
+
+        if self.configure_state == CameraController.CONFIGURE_STATE_CONFIGURING:
+
+            num_cameras_configuring = self.get_num_enabled_in_state(CameraController.CONFIGURE_STATE_CONFIGURING, self.camera_configure_state)
+            configure_elapsed_time = time.time() - self.configure_time
+            if num_cameras_configuring > 0:
+                if configure_elapsed_time > self.configure_timeout:
+                    self.configure_status = "Configure timed out on {} cameras".format(num_cameras_configuring)
+                    logging.error(self.configure_status)
+                    self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
+            else:
+                self.configure_status = "Camera configuration completed OK after {:.3f} secs".format(configure_elapsed_time)
+                logging.info(self.configure_status)
+                self.configure_state = CameraController.CONFIGURE_STATE_READY
 
     def handle_capture_state(self):
 
@@ -230,6 +257,14 @@ class CameraController(object):
 
         return self.system_status
 
+    def get_configure_state(self):
+
+        return self.configure_state
+
+    def get_configure_status(self):
+
+        return self.configure_status
+
     def get_capture_state(self):
 
         return self.capture_state
@@ -248,21 +283,29 @@ class CameraController(object):
 
     def set_camera_params(self, params):
 
-        do_load = 0
-        
+        do_configure = 0
+
         for param in params:
             if param in self.camera_params:
                 self.camera_params[param] = params[param][-1]
-            elif param == 'load':
-                do_load = params[param][-1]
+            elif param == 'configure':
+                do_configure = params[param][-1]
             else:
                 logging.warning("Attempting to set unknown camera parameter: {}".format(param))
 
-        if do_load:
-            
+        if do_configure:
+
+            self.configure_state = CameraController.CONFIGURE_STATE_CONFIGURING
+            self.configure_time = time.time()
+            self.configure_status = "Configuration in progress"
+
+            for camera in range(1, CameraController.MAX_CAMERAS+1):
+                if self.camera_enabled[camera]:
+                    self.camera_configure_state[camera] = CameraController.CONFIGURE_STATE_CONFIGURING
+
             param_args = " ".join([ "=".join((param, val)) for param, val in self.camera_params.iteritems()])
-            self.control_mcast_client.send("set id=0 " + param_args)
-            
+            self.control_mcast_client.send("configure id=0 " + param_args)
+
     def get_camera_params(self, params):
 
         response = {}
@@ -353,6 +396,19 @@ class CameraController(object):
                 logging.warning("Camera ID {} responded with no-acknowledge for capture command".format(id))
 
             self.camera_capture_state[id] = CameraController.CAPTURE_STATE_CAPTURED
+
+    def update_camera_configure_state(self, id, did_ack):
+
+        if id < 1 or id > CameraController.MAX_CAMERAS:
+            logging.warning("Got camera configure response for illegal ID: {}".format(id))
+        else:
+            if self.camera_configure_state[id] != CameraController.CONFIGURE_STATE_CONFIGURING:
+                logging.warning("Got configure response for camera ID {} when not in configuring state".format(id))
+            elif not did_ack:
+                logging.warning("Camera ID {} responded with no-acknowledge for capture command".format(id))
+                self.camera_configure_state[id] = CameraController.CONFIGURE_STATE_NOT_READY
+            else:
+                self.camera_configure_state[id] = CameraController.CONFIGURE_STATE_READY
 
     def update_camera_retrieve_state(self, id, did_ack, image_data):
 

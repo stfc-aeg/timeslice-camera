@@ -36,11 +36,11 @@ class CameraServer(SocketServer.UDPServer):
         else:
             self.camera_mod = importlib.import_module('picamera')
             self.camera_type = self.camera_mod.PiCamera
-            
+
         # Initialise LED driver
         self.led = led_driver.LedDriver(args.simulate)
         self.led.set_colour(LedDriver.YELLOW)
-        
+
         self.logger = logger.get_logger()
 
         self.id = args.id
@@ -56,19 +56,21 @@ class CameraServer(SocketServer.UDPServer):
         self.socket.setsockopt(
             socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
+        self.timeout = 0.5
+
         self.client_connected = False
         self.control_connection = control_connection.ControlConnection(self)
 
         self.image_io = io.BytesIO()
 
         self.version_hash, self.version_time = get_version()
-        
+
         self.camera_params = {
             'resolution'    : [ (1920,1080), lambda val_str : tuple([int(val) for val in val_str.split('x')]) ],
             'framerate'     : [ 30, lambda val_str: int(val_str)],
             'shutter_speed' : [ 3000, lambda val_str: int(val_str) ],
             'iso'           : [ 800, lambda val_str: int(val_str) ],
-            'exposure_mode' : [ 'fixedfps', lambda val_str: val_str ], 
+            'exposure_mode' : [ 'fixedfps', lambda val_str: val_str ],
             'color_effects' : [ None, lambda val_str: None if val_str == 'None' else tuple([int(val) for val in val_str.split('')]) ],
             'contrast'      : [ 0, lambda val_str: int(val_str) ],
             'drc_strength'  : [ 'off', lambda val_str: val_str ],
@@ -79,9 +81,9 @@ class CameraServer(SocketServer.UDPServer):
 
         # Install a signal handler
         signal.signal(signal.SIGINT, self.sigint_handler)
-        
+
         self.run_server = True
-        
+
         self.logger.info("Camera server starting up with ID {} (version {} {})".format(
             self.id, self.version_hash, time.ctime(int(self.version_time))))
 
@@ -89,37 +91,37 @@ class CameraServer(SocketServer.UDPServer):
 
         self.run_server = True
         with self.camera_type() as self.camera:
-            
+
             self.init_camera_defaults()
             while self.run_server:
                 self.handle_request()
 
         self.control_connection.disconnect()
-        self.led.set_colour(LedDriver.OFF)                    
+        self.led.set_colour(LedDriver.OFF)
         self.logger.info("Camera server ID {} shutdown".format(self.id))
-        
+
     def sigint_handler(self, signum, frame):
-    
+
         self.logger.info("Interrupt signal received, shutting down")
         self.run_server = False
-            
+
     def init_camera_defaults(self):
-        
+
         for param in self.camera_params:
             setattr(self.camera, param, self.camera_params[param][0])
-            
+
     def set_client_connected(self, is_connected):
-        
+
         self.client_connected = is_connected
         if is_connected:
             self.led.set_colour(LedDriver.GREEN)
         else:
             self.led.set_colour(LedDriver.YELLOW)
-            
+
     def set_camera_param(self, param, val):
-        
+
         param_set_ok = True
-        
+
         if param in self.camera_params:
             try:
                 setattr(self.camera, param, self.camera_params[param][1](val))
@@ -129,7 +131,7 @@ class CameraServer(SocketServer.UDPServer):
         else:
             self.logger.error("Attempt to set illegal camera parameter {}".format(param))
             param_set_ok = False
-            
+
         return param_set_ok
 
     def do_capture(self, blink_led=False):

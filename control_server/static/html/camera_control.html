@@ -96,8 +96,11 @@
 	                        			</select>
 	                        		</div>
 	                        		<div class="col-md-4">
-                    			        <div><label><b>Shutter (1/s):</b></label></div>
+                    			        <div><label><b>Shutter (us):</b></label></div>
 	                        			<select id="config-shutter-select" class="form-control input-sm">
+                                            <option>30000</option>
+                                            <option>10000</option>
+                                            <option>6000</option>
 	                        				<option>3000</option>
 		                        			<option>1000</option>
 											<option>500</option>
@@ -109,7 +112,10 @@
 	                        		</div>
 	                        	</div><!-- /.row -->
                                 <div class="row">
-                                    <div class="col-md-12">
+                                    <div class="col-md-8 text-left">
+                                        <h4><span id="configure-state" class="label label-success" align="left">Test</span></h4>
+                                    </div>
+                                    <div class="col-md-4">
                                         <button type="button" id="camera-config-button" class="btn btn-primary" autocomplete="off">
                                             Configure
                                         </button>

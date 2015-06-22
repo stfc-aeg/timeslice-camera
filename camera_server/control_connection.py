@@ -37,7 +37,7 @@ class ControlConnection(object):
         if not self.connected:
             self.logger.error("Cannot send data to control server: not connected")
             return
-            
+
         try:
             data_size_hdr = struct.pack('<L', len(data))
             self.socket.sendall(data_size_hdr)
@@ -55,7 +55,9 @@ class ControlConnection(object):
 
     def disconnect(self):
 
-        self.socket.close()
+        if self.socket != None:
+            self.socket.close()
+
         self.connected = False
         self.server.set_client_connected(self.connected)
 

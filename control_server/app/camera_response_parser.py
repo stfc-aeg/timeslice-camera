@@ -16,6 +16,8 @@ class CameraResponseParser(object):
                            'RETRIEVE_NACK'  : self.retrieve_nack_response,
                            'PREVIEW_ACK'    : self.preview_ack_response,
                            'PREVIEW_NACK'   : self.preview_nack_response,
+                           'CONFIGURE_ACK'  : self.configure_ack_response,
+                           'CONFIGURE_NACK' : self.configure_nack_response,
                         }
 
     def parse_response(self, response_data):
@@ -125,3 +127,13 @@ class CameraResponseParser(object):
     def preview_nack_response(self, id, args, raw_data):
 
         logging.error("Got preview no-acknowledge for camera {}, args={}".format(id, args))
+
+    def configure_ack_response(self, id, args, raw_data):
+
+        logging.debug("Got configure acknowledge from camera {}, args={}".format(id, args))
+        self.camera_controller.update_camera_configure_state(id, True)
+
+    def configure_nack_response(self, id, args, raw_data):
+
+        logging.debug("Got configure no-acknowledge from camera {}, args={}".format(id, args))
+        self.camera_controller.update_camera_configure_state(id, False)

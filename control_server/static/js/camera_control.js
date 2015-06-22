@@ -165,6 +165,14 @@ function poll_camera_state()
             $('#system-state').removeClass('label-danger').addClass('label-success');
         }
         $('#capture-state').html(response.capture_status);
+
+        $('#configure-state').html(response.configure_status);
+        if (response.configure_state == 0) {
+            $('#configure-state').removeClass('label-success').addClass('label-danger');
+        }
+        else {
+            $('#configure-state').removeClass('label-danger').addClass('label-success');
+        }
     });
     setTimeout(poll_camera_state, 1000);
 }
@@ -264,7 +272,7 @@ $('#config-shutter-select').change(function() {
 
 $('#camera-config-button').click(function() {
     console.log("Camera config button clicked");
-    post_config_change("load", 1)
+    post_config_change("configure", 1)
 });
 
 

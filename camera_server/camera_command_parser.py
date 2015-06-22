@@ -126,7 +126,7 @@ class CameraCommandParser(object):
         preview_ok = True
         self.logger.debug("Preview command")
 
-        preview_ok = self.server.do_capture()
+        preview_ok = self.server.do_capture(False)
 
         image_size = 0
 
@@ -151,7 +151,7 @@ class CameraCommandParser(object):
 
         self.logger.debug("Capture command")
 
-        capture_ok = self.server.do_capture()
+        capture_ok = self.server.do_capture(True)
 
         if capture_ok:
             response_cmd = 'capture_ack'

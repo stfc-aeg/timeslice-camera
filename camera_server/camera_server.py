@@ -11,6 +11,7 @@ import importlib
 import io
 import struct
 import sys
+import signal
 
 import logger
 import camera_command_parser
@@ -76,15 +77,32 @@ class CameraServer(SocketServer.UDPServer):
             'brightness'    : [ 50, lambda val_str: int(val_str) ],
         }
 
+        # Install a signal handler
+        signal.signal(signal.SIGINT, self.sigint_handler)
+        
+        self.run_server = True
+        
         self.logger.info("Camera server starting up with ID {} (version {} {})".format(
             self.id, self.version_hash, time.ctime(int(self.version_time))))
 
     def run(self):
 
+        self.run_server = True
         with self.camera_type() as self.camera:
             
             self.init_camera_defaults()
-            self.serve_forever()
+            while self.run_server:
+                self.handle_request()
+
+        self.control_connection.disconnect()
+                    
+        self.logger.info("Camera server ID {} shutdown".format(self.id))
+        
+    def sigint_handler(self, signum, frame):
+    
+        self.logger.info("Interrupt signal received, shutting down")
+        self.run_server = False
+        self.led.set_colour(LedDriver.OFF)
             
     def init_camera_defaults(self):
         
@@ -115,7 +133,7 @@ class CameraServer(SocketServer.UDPServer):
             
         return param_set_ok
 
-    def do_capture(self):
+    def do_capture(self, blink_led=False):
 
         capture_ok = True
 
@@ -124,6 +142,8 @@ class CameraServer(SocketServer.UDPServer):
 
         try:
             self.camera.capture(self.image_io, format='jpeg', use_video_port=True)
+            if (blink_led):
+                self.led.blink(LedDriver.RED, LedDriver.GREEN, 0.1, 10)
 
         except self.camera_mod.PiCameraRuntimeError, e:
             capture_ok = False
@@ -196,7 +216,7 @@ def main():
     # Parse arguments
     args = parse_args()
 
-    # Set up a customelogger
+    # Set up a custom logger
     logger.setup_logger('camera_server', args.logging)
 
     server = CameraServer(args)

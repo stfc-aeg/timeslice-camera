@@ -55,7 +55,8 @@ class CameraServer(SocketServer.UDPServer):
         self.socket.setsockopt(
             socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-        self.control_connection = control_connection.ControlConnection()
+        self.client_connected = False
+        self.control_connection = control_connection.ControlConnection(self)
 
         self.image_io = io.BytesIO()
 
@@ -89,6 +90,14 @@ class CameraServer(SocketServer.UDPServer):
         
         for param in self.camera_params:
             setattr(self.camera, param, self.camera_params[param][0])
+            
+    def set_client_connected(self, is_connected):
+        
+        self.client_connected = is_connected
+        if is_connected:
+            self.led.set_colour(LedDriver.GREEN)
+        else:
+            self.led.set_colour(LedDriver.YELLOW)
             
     def set_camera_param(self, param, val):
         

@@ -24,10 +24,12 @@ class LedDriver(object):
         else:
             self.gpio = None
             
-            
+        self.colour = LedDriver.OFF  
             
     def set_colour(self, colour=None):
  
+        self.colour = colour
+        
         if self.gpio == None:
             return
  

@@ -5,8 +5,9 @@ import struct
 
 class ControlConnection(object):
 
-    def __init__(self):
+    def __init__(self, server):
 
+        self.server = server
         self.socket = None
 
         self.connected = False
@@ -28,6 +29,7 @@ class ControlConnection(object):
             self.logger.error("Connecting to control server on {}:{} timed out".format(host, port))
             self.connected = False
 
+        self.server.set_client_connected(self.connected)
         return self.connected
 
     def send(self, data):
@@ -55,6 +57,7 @@ class ControlConnection(object):
 
         self.socket.close()
         self.connected = False
+        self.server.set_client_connected(self.connected)
 
     def is_connected(self):
 

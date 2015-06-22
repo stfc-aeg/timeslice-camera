@@ -45,11 +45,9 @@
       </div>
     </nav>
 
-    <div class="container">
-
+    <div class="container-fluid">
         <div class="camera-control">
-
-            <div class="row">
+            <div class="row equal">
             	<div class="col-md-6">
 	                <div id="capture" class="panel panel-primary">
                         <div class="panel-heading">
@@ -59,7 +57,7 @@
                             <div>
                                 <h4>Capture state: <span id="capture-state" class="label label-success">Test</span></h4>
                             </div>
-                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary btn-lg" autocomplete="off">
+                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary" autocomplete="off">
                                 Capture
                             </button>
                         </div>
@@ -109,15 +107,21 @@
 											<option>30</option>
 	                        			</select>
 	                        		</div>
-	                        	</div>
+	                        	</div><!-- /.row -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" id="camera-config-button" class="btn btn-primary" autocomplete="off">
+                                            Configure
+                                        </button>
+                                    </div>
+                                </div>
 	                        </div>
                         </div>
                     </div><!-- /.config -->
             	</div>
             </div>
 
-            <div class="row">
-
+            <div class="row equal">
                 <div class="col-md-6">
                     <div id="system" class="panel panel-primary">
                         <div class="panel-heading">

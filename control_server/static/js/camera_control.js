@@ -269,3 +269,16 @@ function post_config_change(param, value)
 
     });
 }
+
+$('#camera-config-button').click(function() {
+    console.log("Camera config button clicked");
+});
+
+window.onload = function resizePanels(){
+    var h1 = Math.max($("#config").height(), $("#capture").height())
+    $("#capture").height(h1);
+    $("#config").height(h1);
+    var h2 = Math.max($("#system").height(), $("#preview").height())
+    $("#system").height(h2);
+    $("#preview").height(h2);
+}

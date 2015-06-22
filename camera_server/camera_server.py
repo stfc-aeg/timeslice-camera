@@ -95,14 +95,13 @@ class CameraServer(SocketServer.UDPServer):
                 self.handle_request()
 
         self.control_connection.disconnect()
-                    
+        self.led.set_colour(LedDriver.OFF)                    
         self.logger.info("Camera server ID {} shutdown".format(self.id))
         
     def sigint_handler(self, signum, frame):
     
         self.logger.info("Interrupt signal received, shutting down")
         self.run_server = False
-        self.led.set_colour(LedDriver.OFF)
             
     def init_camera_defaults(self):
         

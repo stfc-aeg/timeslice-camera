@@ -54,6 +54,20 @@ class CameraServer(SocketServer.UDPServer):
         self.image_io = io.BytesIO()
 
         self.version_hash, self.version_time = get_version()
+        
+        self.camera_params = {
+            'resolution'    : [ (1920,1080), lambda val_str : tuple([int(val) for val in val_str.split('x')]) ],
+            'framerate'     : [ 30, lambda val_str: int(val_str)],
+            'shutter_speed' : [ 3000, lambda val_str: int(val_str) ],
+            'iso'           : [ 800, lambda val_str: int(val_str) ],
+            'exposure_mode' : [ 'fixedfps', lambda val_str: val_str ], 
+            'color_effects' : [ None, lambda val_str: None if val_str == 'None' else tuple([int(val) for val in val_str.split('')]) ],
+            'contrast'      : [ 0, lambda val_str: int(val_str) ],
+            'drc_strength'  : [ 'off', lambda val_str: val_str ],
+            'awb_mode'      : [ 'off', lambda val_str: val_str ],
+            'awb_gains'     : [ (1.5, 1.5), lambda val_str : tuple([float(val) for val in val_str.split(',')]) ],
+            'brightness'    : [ 50, lambda val_str: int(val_str) ],
+        }
 
         self.logger.info("Camera server starting up with ID {} (version {} {})".format(
             self.id, self.version_hash, time.ctime(int(self.version_time))))
@@ -67,17 +81,24 @@ class CameraServer(SocketServer.UDPServer):
             
     def init_camera_defaults(self):
         
-        self.camera.resolution = (1920,1080)
-        self.camera.framerate = 30
-        self.camera.shutter_speed = 3000
-        self.camera.iso = 800
-        self.camera.exposure_mode = 'fixedfps'
-        self.camera.color_effects = None
-        self.camera.contrast = 0
-        self.camera.drc_strength = 'off'
-        self.camera.awb_mode = 'off'
-        self.camera.awb_gains = (1.5, 1.5)
-        self.camera.brightness = 50
+        for param in self.camera_params:
+            setattr(self.camera, param, self.camera_params[param][0])
+            
+    def set_camera_param(self, param, val):
+        
+        param_set_ok = True
+        
+        if param in self.camera_params:
+            try:
+                setattr(self.camera, param, self.camera_params[param][1](val))
+            except Exception as e:
+                self.logger.error("Failed to set camera parameter {} : {}".format(param, e))
+                param_set_ok = False
+        else:
+            self.logger.error("Attempt to set illegal camera parameter {}".format(param))
+            param_set_ok = False
+            
+        return param_set_ok
 
     def do_capture(self):
 

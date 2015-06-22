@@ -248,13 +248,21 @@ class CameraController(object):
 
     def set_camera_params(self, params):
 
-        print params
+        do_load = 0
+        
         for param in params:
             if param in self.camera_params:
                 self.camera_params[param] = params[param][-1]
+            elif param == 'load':
+                do_load = params[param][-1]
             else:
                 logging.warning("Attempting to set unknown camera parameter: {}".format(param))
 
+        if do_load:
+            
+            param_args = " ".join([ "=".join((param, val)) for param, val in self.camera_params.iteritems()])
+            self.control_mcast_client.send("set id=0 " + param_args)
+            
     def get_camera_params(self, params):
 
         response = {}

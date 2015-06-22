@@ -262,6 +262,12 @@ $('#config-shutter-select').change(function() {
     post_config_change("shutter_speed", $(this).val());
 });
 
+$('#camera-config-button').click(function() {
+    console.log("Camera config button clicked");
+    post_config_change("load", 1)
+});
+
+
 function post_config_change(param, value)
 {
     console.log("Posting config change: param: " + param + " value: " + value);
@@ -269,10 +275,6 @@ function post_config_change(param, value)
 
     });
 }
-
-$('#camera-config-button').click(function() {
-    console.log("Camera config button clicked");
-});
 
 window.onload = function resizePanels(){
     var h1 = Math.max($("#config").height(), $("#capture").height())

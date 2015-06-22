@@ -184,7 +184,10 @@ class CameraCommandParser(object):
         return retrieve_ok
 
     def set_cmd(self, args):
-        self.logger.debug("Set command")
+        self.logger.debug("Set command: {}".format(args))
+        for param, val in args.iteritems():
+            if param != 'id':
+                self.server.set_camera_param(param, val)
         return True
 
     def get_cmd(self, args):

@@ -15,6 +15,8 @@ import sys
 import logger
 import camera_command_parser
 import control_connection
+import led_driver
+from led_driver import LedDriver
 
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
@@ -33,7 +35,11 @@ class CameraServer(SocketServer.UDPServer):
         else:
             self.camera_mod = importlib.import_module('picamera')
             self.camera_type = self.camera_mod.PiCamera
-
+            
+        # Initialise LED driver
+        self.led = led_driver.LedDriver(args.simulate)
+        self.led.set_colour(LedDriver.YELLOW)
+        
         self.logger = logger.get_logger()
 
         self.id = args.id

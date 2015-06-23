@@ -4,11 +4,16 @@ import app.control_tcp_server
 import app.camera_controller
 
 import logging
+import signal
 
 import tornado.ioloop
 import tornado.options
 from tornado.options import options
 
+def sigint_handler(signum, frame):
+    logging.info("Interrupt signal received, shutting down")
+    tornado.ioloop.IOLoop.instance().stop()
+    
 def main():
 
     # Define configuration options and add to tornado option parser
@@ -41,10 +46,14 @@ def main():
     control_tcp_server.listen(options.ctrl_port, options.ctrl_addr)
 
     logging.info("Camera control server listening on %s:%d..." % (options.ctrl_addr, options.ctrl_port))
+    
+    # Register a SIGINT signal handler
+    signal.signal(signal.SIGINT, sigint_handler)
 
     # Enter IO processing loop
     tornado.ioloop.IOLoop.instance().start()
 
+    logging.info("Camera control server shutdown")
 
 if __name__ == "__main__":
     main()

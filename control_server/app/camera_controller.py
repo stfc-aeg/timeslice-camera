@@ -28,11 +28,12 @@ class CameraController(object):
     CAPTURE_STATE_RETRIEVED   = 5
     CAPTURE_STATE_RENDERING   = 6
 
-    def __init__(self, control_mcast_client, control_addr, control_port):
+    def __init__(self, control_mcast_client, control_addr, control_port, output_path):
 
         self.control_mcast_client = control_mcast_client
         self.control_addr = control_addr
         self.control_port = control_port
+        self.output_path = output_path
 
         self.response_parser = camera_response_parser.CameraResponseParser(self)
 
@@ -74,6 +75,9 @@ class CameraController(object):
         self.retrieve_time = 0.0
         self.render_time = 0.0
 
+        self.render_path = self.output_path
+        self.render_timestamp = ""
+        
         self.render_process = None
         self.camera_monitor_enable = True
         self.camera_monitor_loop_ratio = 10
@@ -181,7 +185,7 @@ class CameraController(object):
             else:
                 (render_stdout, render_stderr) = self.render_process.communicate()
                 if render_state == 0:
-                    self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
+                    self.capture_status = "Timeslice rendered OK to {} ({:.3f}s)".format(self.render_path, render_elapsed_time)
                     logging.info(self.capture_status)
                 else:
                     self.capture_status = "Timeslice render failed with return code {}".format(render_state)
@@ -306,6 +310,7 @@ class CameraController(object):
                 
         if config_changed:
             self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
+            self.configure_status = "Configuration needs loading"
 
         if do_configure:
 
@@ -342,6 +347,18 @@ class CameraController(object):
 
     def do_capture(self):
 
+        # Define the output file location with a timestamped directory within the output path and
+        # create the output directory if necessary
+        self.render_timestamp = time.strftime("%Y%m%d-%H%M%S")
+        self.render_path = os.path.join(self.output_path, "timeslice_{}".format(self.render_timestamp))
+        logging.info("Writing output files to path {}".format(self.render_path))                       
+        try: 
+            os.makedirs(self.render_path)
+        except OSError, e:
+            if not os.path.isdir(self.render_path):
+                self.capture_status = "Failed to create output path {} : {}".format(self.render_path, e)
+                logging.error(self.capture_status)
+        
         # Set the capture state to capturing, set the capture time
         self.capture_state = CameraController.CAPTURE_STATE_CAPTURING
         self.capture_time = time.time()
@@ -374,7 +391,10 @@ class CameraController(object):
         self.render_time = time.time()
         self.capture_status = "Timeslice render in progress"
 
-        render_cmd = "ffmpeg -framerate 2 -i \'/tmp/image_%02d.jpg\' -codec copy -y /tmp/timeslice.mkv"
+        input_file_pattern = os.path.join(self.render_path, "image_%02d.jpg")
+        output_file = os.path.join(self.render_path, "timeslice_{}.mkv".format(self.render_timestamp))
+        
+        render_cmd = "ffmpeg -framerate 2 -i \'{}\' -codec copy -y {}".format(input_file_pattern, output_file)
         logging.info("Launching render process with command: {}".format(render_cmd))
 
         self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -437,7 +457,7 @@ class CameraController(object):
             self.camera_capture_state[id] = CameraController.CAPTURE_STATE_RETRIEVED
 
             if image_data is not None and len(image_data) > 0:
-                image_file_name = "/tmp/image_{:02d}.jpg".format(id)
+                image_file_name = os.path.join(self.render_path, "image_{:02d}.jpg".format(id))
                 image_file = open(image_file_name, 'wb')
                 image_file.write(image_data)
                 image_file.close()

@@ -43,8 +43,9 @@ class CameraController(object):
         self.camera_last_ping_time = [0.0] * (CameraController.MAX_CAMERAS+1)
         self.camera_version_info   = [('Unknown', '0')] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
-        self.camera_enabled[1] = 1
-        self.camera_enabled[2] = 1
+        
+        for cam in range(1,9):
+            self.camera_enabled[cam] = 1
 
         self.camera_params = {
             'resolution'    : '1920x1080',
@@ -114,10 +115,16 @@ class CameraController(object):
         if self.configure_state == CameraController.CONFIGURE_STATE_CONFIGURING:
 
             num_cameras_configuring = self.get_num_enabled_in_state(CameraController.CONFIGURE_STATE_CONFIGURING, self.camera_configure_state)
+            num_cameras_not_ready = self.get_num_enabled_in_state(CameraController.CONFIGURE_STATE_NOT_READY, self.camera_configure_state)
             configure_elapsed_time = time.time() - self.configure_time
             if num_cameras_configuring > 0:
                 if configure_elapsed_time > self.configure_timeout:
-                    self.configure_status = "Configure timed out on {} cameras".format(num_cameras_configuring)
+                    self.configure_status = "Configure timed out with {} cameras in configuring state".format(num_cameras_configuring)
+                    logging.error(self.configure_status)
+                    self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
+            elif num_cameras_not_ready > 0:
+                if configure_elapsed_time > self.configure_timeout:
+                    self.configure_status = "Configure timed out with {} cameras not ready".format(num_cameras_not_ready)
                     logging.error(self.configure_status)
                     self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
             else:
@@ -177,7 +184,7 @@ class CameraController(object):
                     self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
                     logging.info(self.capture_status)
                 else:
-                    self.capture_state = "Timeslice render failed with return code {}".format(render_state)
+                    self.capture_status = "Timeslice render failed with return code {}".format(render_state)
                     logging.error(self.capture_status)
                     logging.error("Render output:\n{}\n{}".format(render_stdout, render_stderr))
 
@@ -285,13 +292,20 @@ class CameraController(object):
 
         do_configure = 0
 
+        config_changed = False
+        
         for param in params:
             if param in self.camera_params:
+                if self.camera_params[param] != params[param][-1]:
+                    config_changed = True
                 self.camera_params[param] = params[param][-1]
             elif param == 'configure':
                 do_configure = params[param][-1]
             else:
                 logging.warning("Attempting to set unknown camera parameter: {}".format(param))
+                
+        if config_changed:
+            self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
 
         if do_configure:
 

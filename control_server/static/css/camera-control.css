@@ -44,3 +44,10 @@ img.padded {
 .panel-heading {
     text-align: left;
 }
+
+.navbar-brand {
+	padding: 10px;
+	left: 15px;
+	top: 0px;
+	position: absolute;
+}

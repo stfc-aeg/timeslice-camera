@@ -177,7 +177,7 @@ function poll_camera_state()
     setTimeout(poll_camera_state, 1000);
 }
 
-$('#version-info-button').click(function() {
+$('#version-info-link').click(function() {
     $.post('/camera_version', function(data) {
         // Do nothing
     });

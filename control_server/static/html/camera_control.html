@@ -33,21 +33,20 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><img class="navbar-brand" src="/static/img/stfc_logo.png"></a>
+          <a class="navbar-brand" href="#"><img class="navbar-brand logo" src="/static/img/stfc_logo.png"></a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav pull-left">
+          <ul class="nav navbar-nav">
             <li class="active"><a href="#">Timeslice Camera</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
             <li class="dropdown">
 	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
 	          <ul class="dropdown-menu">
-	            <li><a href="#version-modal" role="button" data-toggle="modal">Software version info</a></li>
+	            <li><a href="#version-modal" role="button" data-toggle="modal" id="version-info-link">Software version info</a></li>
 	            <li><a href="#">Update camera servers</a></li>
 	            <li><a href="#">Restart camera servers</a></li>
 	            <li role="separator" class="divider"></li>
-	            <li><a href="#">Power down camera servers</a></li>
+	            <li><a href="#">Power down cameras</a></li>
 	          </ul>
 	        </li>
           </ul>
@@ -144,22 +143,37 @@
                             <h3 class="panel-title">System Status</h3>
                         </div>
                         <div class="panel-body" style="height:100%">
-                            <div>
-                                <h4>System state: <span id="system-state" class="label label-danger">&nbsp;</span></h4>
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-4">
+                                        <div><label><b>Monitor cameras:</b></label></div>
+                                        <input type="checkbox" name="monitor-enable-checkbox" data-size="small">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div><label>Camera enable:</label></div>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button id="camera-enable-all"  class="btn btn-primary">All</button>
+                                            <button id="camera-enable-none" class="btn btn-primary">None</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-1"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="camera-state">
+                                            <!-- This div is populated dynamically by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h4><span id="system-state" class="label label-danger">&nbsp;</span></h4>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="camera-state">
-                                <!-- This div is populated dynamically by JS -->
-                            </div><br>
-                            <label>Camera enable:</label>
-                            <div class="btn-group" role="group">
-                                <button id="camera-enable-all"  class="btn btn-primary">All</button>
-                                <button id="camera-enable-none" class="btn btn-primary">None</button>
-                            </div>
-                            <div class="checkbox">
-                                <label><b>Monitor cameras:</b></label>
-                                <input type="checkbox" name="monitor-enable-checkbox" data-size="mini">
-                            </div>
-                            <a href="#" id="version-info-button" class="btn btn-primary" data-toggle="modal" data-target="#version-modal">Version Info</a>
                         </div>
                     </div><!-- /.system_status -->
                 </div>

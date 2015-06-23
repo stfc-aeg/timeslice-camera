@@ -19,8 +19,9 @@ fi
 node=$1
 echo "Provisioning timeslice camera node $node ..."
 
-echo "Copying SSH keys ..."
-scp ~pi/.ssh/id_dsa.pub ~pi/.ssh/id_dsa ~pi/.ssh/authorized_keys ${node}:.ssh/.
+echo "Copying SSH configuration ..."
+#scp ~pi/.ssh/id_dsa.pub ~pi/.ssh/id_dsa ~pi/.ssh/authorized_keys ${node}:.ssh/.
+cat $provision_dir/pi_ssh.tgz | ssh ${node} tar xvz
 
 echo "Copying /etc/hosts file ..."
 scp $provision_dir/hosts ${node}:/tmp/.

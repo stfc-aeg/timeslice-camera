@@ -48,6 +48,15 @@ img.padded {
     text-align: left;
 }
 
+.panel-primary {
+	border-color: #031E2F;
+}
+
+.panel-primary > .panel-heading {
+	border-color: #031E2F;
+	background-color: #031E2F;
+}
+
 .logo {
     padding: 10px;
     height: 50px;

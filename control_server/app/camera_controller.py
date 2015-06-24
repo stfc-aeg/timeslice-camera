@@ -185,7 +185,7 @@ class CameraController(object):
             else:
                 (render_stdout, render_stderr) = self.render_process.communicate()
                 if render_state == 0:
-                    self.capture_status = "Timeslice rendered OK to {} ({:.3f}s)".format(self.render_path, render_elapsed_time)
+                    self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
                     logging.info(self.capture_status)
                 else:
                     self.capture_status = "Timeslice render failed with return code {}".format(render_state)
@@ -291,6 +291,10 @@ class CameraController(object):
     def get_preview_image(self):
 
         return self.preview_image
+    
+    def get_render_path(self):
+        
+        return self.render_path
 
     def set_camera_params(self, params):
 

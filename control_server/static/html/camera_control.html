@@ -63,15 +63,48 @@
                             <h3 class="panel-title">Timeslice Capture</h3>
                         </div>
                         <div class="panel-body" style="height:100%">
-                            <div>
-                                <h4>Capture state: <span id="capture-state" class="label label-success">Test</span></h4>
-                            </div>
-                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary" autocomplete="off">
-                                Capture
-                            </button>
+                        	<div class="container-fluid">
+	                        	<div class="row">
+	                        		<div class="col-md-4">
+	                        			<div><label><b>Render loops:</b></label></div>
+	                        			<select id="render-loop-select" class="form-control input-sm">
+	                        				<option>1</option>
+	                        				<option>2</option>
+	                        				<option>3</option>
+	                        				<option>5</option>
+	                        				<option>10</option>
+	                        			</select>
+	                        		</div>
+	                        		<div class="col-md-4">
+		                        		<div><label><b>Stagger capture:</b></label></div>
+		                        		<input type="checkbox" name="stagger-enable-checkbox" data-size="small">
+	                        		</div>
+	                        		<div class="col-md-4">
+	                        			<div><label><b>Stagger offset:</b></label></div>
+	                        			<div class="input-group input-group-sm">
+		                        			<input type="text" id="stagger-offset-input" class="form-control text-right" placeholder="0" aria-describedby="stagger-offset-addon"/>
+		                        			<span class="input-group-addon" id="stagger-offset-addon">ms</span>
+	                        			</div>
+	                        		</div>
+	                        	</div>
+	                            <div class="row">
+		                            <div class="col-md-12 text-left"><h5><b>Timeslice render output path:</b>&nbsp;<span id="render-path">Path</span></h5></div>
+	                            </div>
+	                        	<div class="row">
+	                        		<div class="col-md-8 text-left">
+		                                <h4><span id="capture-state" class="label label-success">Capture state</span></h4>
+	                        		</div>
+	                        		<div class="col-md-4">
+			                            <button type="button" id="captureButton" data-loading-text="Capturing..." class="btn btn-primary" autocomplete="off">
+			                                Capture
+			                            </button>	                        		
+	                        		</div>
+	                        	</div>
+                        	</div>
                         </div>
                     </div><!-- /.capture -->
             	</div>
+
             	<div class="col-md-6">
 	                <div id="config" class="panel panel-primary">
                         <div class="panel-heading">
@@ -120,6 +153,9 @@
 	                        			</select>
 	                        		</div>
 	                        	</div><!-- /.row -->
+                    		    <div class="row">
+		                            <div class="col-md-12 text-left"><h5>&nbsp;</h5></div>
+	                            </div>
                                 <div class="row">
                                     <div class="col-md-8 text-left">
                                         <h4><span id="configure-state" class="label label-success" align="left">Test</span></h4>

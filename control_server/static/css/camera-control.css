@@ -6,8 +6,9 @@ body {
   text-align: center;
 }
 
-.btn-fixed-width {
-    width: 40px !important;
+.btn-fixed-size {
+    width: 50px !important;
+    height: 45px !important;
     text-align: center;
 }
 

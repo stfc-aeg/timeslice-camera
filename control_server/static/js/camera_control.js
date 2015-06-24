@@ -5,6 +5,9 @@ var cameras_per_group = 8;
 var max_groups = max_cameras / cameras_per_group;
 var camera_enable = [];
 var icam = 0;
+
+var capture_stagger_enable = false;
+
 var preview_enable = false;
 var preview_camera_select = 1;
 var preview_update_time = 1;
@@ -18,8 +21,22 @@ resize_panels();
 
 function config_capture_pane()
 {
+	
+	update_capture_config();
+	
+	function update_capture_config()
+	{
+		$.getJSON("/capture_config", function(response)
+		{
+			console.log("Capture config response: " + response)
+			capture_stagger_enable = response.stagger_enable == '1' ? true : false;
+			console.log("capture stagger enable: ", capture_stagger_enable);
+		});
+	}
+	
 	$("[name='stagger-enable-checkbox']").bootstrapSwitch();
-
+	$("[name='stagger-enable-checkbox']").bootstrapSwitch('state',capture_stagger_enable, true);
+	
 	$('#captureButton').click(function() {
 
 	    $(this).button('loading');
@@ -29,6 +46,27 @@ function config_capture_pane()
 	    });
 	});
 
+	$('#render-loop-select').change(function() {
+		post_capture_config_change("render_loop", $(this).val());
+	});
+	
+	$('input[name="stagger-enable-checkbox"]').on('switchChange.bootstrapSwitch', function(event,state) {
+		capture_stagger_enable = $("[name='stagger-enable-checkbox']").bootstrapSwitch('state') == true ? 1 : 0;
+	    post_capture_config_change("stagger_enable", capture_stagger_enable);
+	});
+	
+	$('#stagger-offset-input').change(function() {
+		// TODO validate input value as integer
+		post_capture_config_change("stagger_offset", $(this).val());
+	});
+	
+	function post_capture_config_change(param, value)
+	{
+		console.log("Posting capture config change: param: " + param + " value: " + value);
+		$.post("/capture_config?" + param + "=" + value, function(data) {
+			
+		});
+	}
 }
 
 function config_camera_pane()
@@ -58,24 +96,24 @@ function config_camera_pane()
 	}
 
 	$('#config-resolution-select').change(function() {
-	    post_config_change("resolution", $(this).val());
+	    post_camera_config_change("resolution", $(this).val());
 	});
 
 	$('#config-iso-select').change(function() {
-	    post_config_change("iso", $(this).val());
+	    post_camera_config_change("iso", $(this).val());
 	});
 
 	$('#config-shutter-select').change(function() {
-	    post_config_change("shutter_speed", $(this).val());
+	    post_camera_config_change("shutter_speed", $(this).val());
 	});
 
 	$('#camera-config-button').click(function() {
 	    console.log("Camera config button clicked");
-	    post_config_change("configure", 1)
+	    post_camera_config_change("configure", 1)
 	});
 
 
-	function post_config_change(param, value)
+	function post_camera_config_change(param, value)
 	{
 	    console.log("Posting config change: param: " + param + " value: " + value);
 	    $.post("/camera_config?" + param + "=" + value, function(data) {
@@ -307,7 +345,7 @@ function date_from_unix_time(unix_time)
     return date_str;
 }
 
-function resizePanels(){
+function resize_panels(){
     var h1 = Math.max($("#config").height(), $("#capture").height())
     $("#capture").height(h1);
     $("#config").height(h1);

@@ -77,6 +77,10 @@ class CameraController(object):
 
         self.render_path = self.output_path
         self.render_timestamp = ""
+        self.render_loop = 1
+        
+        self.stagger_enable = True
+        self.stagger_offset = 33
         
         self.render_process = None
         self.camera_monitor_enable = True
@@ -295,6 +299,18 @@ class CameraController(object):
     def get_render_path(self):
         
         return self.render_path
+    
+    def get_render_loop(self):
+        
+        return self.render_loop
+    
+    def get_stagger_enable(self):
+        
+        return self.stagger_enable
+    
+    def get_stagger_offset(self):
+        
+        return self.stagger_offset
 
     def set_camera_params(self, params):
 

@@ -54,3 +54,7 @@ img.padded {
     top: 0px;
     margin-top: -15px;
 }
+
+.navbar-inverse {
+	background: #031E2F;
+}

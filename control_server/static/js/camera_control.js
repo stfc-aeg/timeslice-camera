@@ -6,7 +6,7 @@ var max_groups = max_cameras / cameras_per_group;
 var camera_enable = [];
 var icam = 0;
 
-var capture_stagger_enable = false;
+var capture_stagger_enable = 0;
 
 var preview_enable = false;
 var preview_camera_select = 1;
@@ -21,22 +21,28 @@ resize_panels();
 
 function config_capture_pane()
 {
-	
-	update_capture_config();
-	
+
+    $("[name='stagger-enable-checkbox']").bootstrapSwitch();
+
+    update_capture_config();
+
 	function update_capture_config()
 	{
 		$.getJSON("/capture_config", function(response)
 		{
-			console.log("Capture config response: " + response)
-			capture_stagger_enable = response.stagger_enable == '1' ? true : false;
-			console.log("capture stagger enable: ", capture_stagger_enable);
+			capture_stagger_enable = parseInt(response.stagger_enable);
+            $("[name='stagger-enable-checkbox']").bootstrapSwitch('state', capture_stagger_enable, true);
+			$('#stagger-offset-input').val(parseInt(response.stagger_offset));
+            $(function() {
+                $('#render-loop-select option').filter(function() {
+                    return ($(this).text() == response.render_loop);
+                }).prop('selected', true);
+            });
+
 		});
 	}
-	
-	$("[name='stagger-enable-checkbox']").bootstrapSwitch();
-	$("[name='stagger-enable-checkbox']").bootstrapSwitch('state',capture_stagger_enable, true);
-	
+
+
 	$('#captureButton').click(function() {
 
 	    $(this).button('loading');
@@ -47,25 +53,25 @@ function config_capture_pane()
 	});
 
 	$('#render-loop-select').change(function() {
-		post_capture_config_change("render_loop", $(this).val());
+		post_capture_config_change();
 	});
-	
+
 	$('input[name="stagger-enable-checkbox"]').on('switchChange.bootstrapSwitch', function(event,state) {
-		capture_stagger_enable = $("[name='stagger-enable-checkbox']").bootstrapSwitch('state') == true ? 1 : 0;
-	    post_capture_config_change("stagger_enable", capture_stagger_enable);
+	    post_capture_config_change();
 	});
-	
+
 	$('#stagger-offset-input').change(function() {
 		// TODO validate input value as integer
-		post_capture_config_change("stagger_offset", $(this).val());
+		post_capture_config_change();
 	});
-	
-	function post_capture_config_change(param, value)
+
+	function post_capture_config_change()
 	{
-		console.log("Posting capture config change: param: " + param + " value: " + value);
-		$.post("/capture_config?" + param + "=" + value, function(data) {
-			
-		});
+        capture_stagger_enable = $("[name='stagger-enable-checkbox']").bootstrapSwitch('state');
+        render_loop = parseInt($('#render-loop-select').val());
+        stagger_offset = parseInt($('#stagger-offset-input').val());
+		$.post("/capture_config?render_loop=" + render_loop + "&stagger_enable=" + (capture_stagger_enable == true ? 1 : 0)
+            + "&stagger_offset=" + stagger_offset);
 	}
 }
 
@@ -220,7 +226,7 @@ function config_system_pane()
 	        else {
 	            $('#configure-state').removeClass('label-danger').addClass('label-success');
 	        }
-	        
+
 	        $('#render-path').html(response.render_path);
 	    });
 	    setTimeout(poll_camera_state, 1000);
@@ -281,7 +287,7 @@ function config_preview_pane()
 	    }
 	    setTimeout(poll_preview_image, preview_update_time * 1000);
 	}
-	
+
 }
 
 function config_version_modal()
@@ -330,7 +336,7 @@ function config_version_modal()
 	        }
 	    });
 	}
-	
+
 }
 
 function date_from_unix_time(unix_time)

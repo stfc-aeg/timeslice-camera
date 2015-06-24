@@ -18,21 +18,27 @@ class CaptureHandler(tornado.web.RequestHandler):
 
     def post(self):
         self.application.camera_controller.do_capture()
-        
+
 class CaptureConfigHandler(tornado.web.RequestHandler):
-    
+
     def get(self):
-        logging.info("Capture config GET")
         response = {}
         response['render_loop'] = self.application.camera_controller.get_render_loop()
         response['stagger_enable'] = '1' if self.application.camera_controller.get_stagger_enable() == True else '0'
         response['stagger_offset'] = self.application.camera_controller.get_stagger_offset()
-        
+
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))
-    
+
     def post(self):
-        logging.info("Capture config POST")
+
+        render_loop = int(self.get_query_argument('render_loop', default='1'))
+        stagger_enable = True if self.get_query_argument('stagger_enable', default='1') else False
+        stagger_offset = int(self.get_query_argument('stagger_offset', default='0'))
+
+        logging.debug("Got capture config POST request: render_loop={} stagger_enable={} stagger_offset={}".format(
+            render_loop, stagger_enable, stagger_offset))
+        self.application.camera_controller.set_capture_config(render_loop, stagger_enable, stagger_offset)
 
 class MonitorHandler(tornado.web.RequestHandler):
 

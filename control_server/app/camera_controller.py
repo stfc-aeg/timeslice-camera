@@ -44,7 +44,7 @@ class CameraController(object):
         self.camera_last_ping_time = [0.0] * (CameraController.MAX_CAMERAS+1)
         self.camera_version_info   = [('Unknown', '0')] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
-        
+
         for cam in range(1,9):
             self.camera_enabled[cam] = 1
 
@@ -78,10 +78,10 @@ class CameraController(object):
         self.render_path = self.output_path
         self.render_timestamp = ""
         self.render_loop = 1
-        
-        self.stagger_enable = True
-        self.stagger_offset = 33
-        
+
+        self.stagger_enable = False
+        self.stagger_offset = 0
+
         self.render_process = None
         self.camera_monitor_enable = True
         self.camera_monitor_loop_ratio = 10
@@ -295,29 +295,35 @@ class CameraController(object):
     def get_preview_image(self):
 
         return self.preview_image
-    
+
     def get_render_path(self):
-        
+
         return self.render_path
-    
+
     def get_render_loop(self):
-        
+
         return self.render_loop
-    
+
     def get_stagger_enable(self):
-        
+
         return self.stagger_enable
-    
+
     def get_stagger_offset(self):
-        
+
         return self.stagger_offset
+
+    def set_capture_config(self, render_loop, stagger_enable, stagger_offset):
+
+        self.render_loop = render_loop
+        self.stagger_enable = stagger_enable
+        self.stagger_offset = stagger_offset
 
     def set_camera_params(self, params):
 
         do_configure = 0
 
         config_changed = False
-        
+
         for param in params:
             if param in self.camera_params:
                 if self.camera_params[param] != params[param][-1]:
@@ -327,7 +333,7 @@ class CameraController(object):
                 do_configure = params[param][-1]
             else:
                 logging.warning("Attempting to set unknown camera parameter: {}".format(param))
-                
+
         if config_changed:
             self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
             self.configure_status = "Configuration needs loading"
@@ -371,14 +377,14 @@ class CameraController(object):
         # create the output directory if necessary
         self.render_timestamp = time.strftime("%Y%m%d-%H%M%S")
         self.render_path = os.path.join(self.output_path, "timeslice_{}".format(self.render_timestamp))
-        logging.info("Writing output files to path {}".format(self.render_path))                       
-        try: 
+        logging.info("Writing output files to path {}".format(self.render_path))
+        try:
             os.makedirs(self.render_path)
         except OSError, e:
             if not os.path.isdir(self.render_path):
                 self.capture_status = "Failed to create output path {} : {}".format(self.render_path, e)
                 logging.error(self.capture_status)
-        
+
         # Set the capture state to capturing, set the capture time
         self.capture_state = CameraController.CAPTURE_STATE_CAPTURING
         self.capture_time = time.time()
@@ -413,7 +419,7 @@ class CameraController(object):
 
         input_file_pattern = os.path.join(self.render_path, "image_%02d.jpg")
         output_file = os.path.join(self.render_path, "timeslice_{}.mkv".format(self.render_timestamp))
-        
+
         render_cmd = "ffmpeg -framerate 2 -i \'{}\' -codec copy -y {}".format(input_file_pattern, output_file)
         logging.info("Launching render process with command: {}".format(render_cmd))
 

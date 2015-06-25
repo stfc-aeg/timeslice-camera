@@ -106,6 +106,8 @@ class CameraController(object):
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
         self.render_timeout = 5.0
+        
+        self.capture_timeout_staggered = self.capture_timeout
 
         self.controller_period = 100
         self.controller = tornado.ioloop.PeriodicCallback(self.controller_callback, self.controller_period)
@@ -151,12 +153,12 @@ class CameraController(object):
             pass
 
         elif self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
-            # num_cameras_capturing = sum([(enabled and (state == CameraController.CAPTURE_STATE_CAPTURING))
-            #     for (enabled, state) in zip(self.camera_enabled[1:], self.camera_capture_state[1:])])
+
             num_cameras_capturing = self.get_num_enabled_in_state(CameraController.CAPTURE_STATE_CAPTURING, self.camera_capture_state)
             capture_elapsed_time = time.time() - self.capture_time
             if num_cameras_capturing > 0:
-                if capture_elapsed_time > self.capture_timeout:
+                self.capture_status = "Capture in progress on {} cameras".format(num_cameras_capturing)
+                if capture_elapsed_time > self.capture_timeout_staggered:
                     self.capture_status = "Captured timed out on {} cameras".format(num_cameras_capturing)
                     logging.error(self.capture_status)
                     self.capture_state = CameraController.CAPTURE_STATE_IDLE
@@ -212,8 +214,9 @@ class CameraController(object):
 
     def monitor_camera_state(self):
 
-        # Run the camera periodic monitoring if enabled
-        if self.camera_monitor_enable:
+        # Run the camera periodic monitoring if enabled and a capture not in progress, as staggered capture means
+        # the cameras don't reply to pings
+        if self.camera_monitor_enable and self.capture_state != CameraController.CAPTURE_STATE_CAPTURING:
             self.camera_monitor_loop -= 1
             if self.camera_monitor_loop == 0:
 
@@ -397,8 +400,14 @@ class CameraController(object):
             if self.camera_enabled[camera]:
                 self.camera_capture_state[camera] = CameraController.CAPTURE_STATE_CAPTURING
 
-        self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(
-                                         (1 if self.stagger_enable == True else 0), self.stagger_offset))
+        # Calculate timeout dependent on whether staggered capture is enabled or not
+        if self.stagger_enable:
+            self.capture_timeout_staggered = self.capture_timeout + (CameraController.MAX_CAMERAS * ((1.0 * self.stagger_offset) / 1000.0))
+        else:
+            self.capture_timeout_staggered = self.capture_timeout
+
+        stagger_enable = 1 if self.stagger_enable == True else 0        
+        self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(stagger_enable, self.stagger_offset))
 
     def do_retrieve(self):
 

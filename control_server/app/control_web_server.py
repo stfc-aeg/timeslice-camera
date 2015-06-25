@@ -33,7 +33,7 @@ class CaptureConfigHandler(tornado.web.RequestHandler):
     def post(self):
 
         render_loop = int(self.get_query_argument('render_loop', default='1'))
-        stagger_enable = True if self.get_query_argument('stagger_enable', default='1') else False
+        stagger_enable = True if self.get_query_argument('stagger_enable', default='1') == '1' else False
         stagger_offset = int(self.get_query_argument('stagger_offset', default='0'))
 
         logging.debug("Got capture config POST request: render_loop={} stagger_enable={} stagger_offset={}".format(

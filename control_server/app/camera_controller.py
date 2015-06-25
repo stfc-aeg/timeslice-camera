@@ -4,6 +4,8 @@ import time
 import subprocess
 import shlex
 import os
+import glob
+import shutil
 
 import camera_response_parser
 
@@ -416,8 +418,39 @@ class CameraController(object):
         self.capture_state = CameraController.CAPTURE_STATE_RENDERING
         self.render_time = time.time()
         self.capture_status = "Timeslice render in progress"
-
-        input_file_pattern = os.path.join(self.render_path, "image_%02d.jpg")
+        
+        # Squash file list to ensure files are contiguously numbered
+        
+        src_files = sorted(glob.glob(os.path.join(self.render_path, "image_*.jpg")))
+        num_src_files = len(src_files)        
+        squashed_files = []
+        num_squashed = 0
+        dst_idx = 1
+        
+        for src_file in src_files:
+            dst_file = (os.path.join(self.render_path, "image_{:03d}.jpg".format(dst_idx)))
+            if src_file != dst_file:
+                num_squashed += 1
+                os.rename(src_file, dst_file)
+            squashed_files.append(dst_file)
+            dst_idx += 1
+            
+        logging.info("Squashed {} image files out of {} in render path {}".format(num_squashed, num_src_files, self.render_path))
+        
+        # Copy image files in order to generate the correct number of loops for rendering
+        
+        dst_idx = len(squashed_files) + 1
+        
+        for loop in range(self.render_loop-1):
+            for src_file in squashed_files:
+                dst_file = os.path.join(self.render_path, "image_{:03d}.jpg".format(dst_idx))
+                shutil.copy2(src_file, dst_file)
+                dst_idx += 1
+        
+        logging.info("Created a total of {} image files from {} for {} render loops at path {}".format(
+                    dst_idx-1, num_src_files, self.render_loop, self.render_path))
+        
+        input_file_pattern = os.path.join(self.render_path, "image_%03d.jpg")
         output_file = os.path.join(self.render_path, "timeslice_{}.mkv".format(self.render_timestamp))
 
         render_cmd = "ffmpeg -framerate 2 -i \'{}\' -codec copy -y {}".format(input_file_pattern, output_file)
@@ -483,7 +516,7 @@ class CameraController(object):
             self.camera_capture_state[id] = CameraController.CAPTURE_STATE_RETRIEVED
 
             if image_data is not None and len(image_data) > 0:
-                image_file_name = os.path.join(self.render_path, "image_{:02d}.jpg".format(id))
+                image_file_name = os.path.join(self.render_path, "image_{:03d}.jpg".format(id))
                 image_file = open(image_file_name, 'wb')
                 image_file.write(image_data)
                 image_file.close()

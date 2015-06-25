@@ -126,7 +126,7 @@ class CameraCommandParser(object):
         preview_ok = True
         self.logger.debug("Preview command")
 
-        preview_ok = self.server.do_capture(False)
+        preview_ok = self.server.do_capture(False, False, 0)
 
         image_size = 0
 
@@ -151,7 +151,19 @@ class CameraCommandParser(object):
 
         self.logger.debug("Capture command")
 
-        capture_ok = self.server.do_capture(True)
+        stagger_enable = False
+        stagger_offset = 0
+        
+        print args
+        if 'stagger_enable' in args:
+            stagger_enable = True if args['stagger_enable'] == '1' else False
+        if 'stagger_offset' in args:
+            try:
+                stagger_offset = int(args['stagger_offset'])
+            except ValueError, e:
+                self.logging.error("Illegal stagger_offset argument received: {}".format(e))
+             
+        capture_ok = self.server.do_capture(True, stagger_enable, stagger_offset)
 
         if capture_ok:
             response_cmd = 'capture_ack'

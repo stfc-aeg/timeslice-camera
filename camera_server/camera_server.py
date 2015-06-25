@@ -134,13 +134,19 @@ class CameraServer(SocketServer.UDPServer):
 
         return param_set_ok
 
-    def do_capture(self, blink_led=False):
+    def do_capture(self, blink_led=False, stagger_enable=False, stagger_offset=0):
 
         capture_ok = True
 
         self.image_io.seek(0)
         self.image_io.truncate()
-
+        
+        if stagger_enable:
+            indexed_stagger_offset = (1.0 * stagger_offset * self.id) / 1000.0
+            if indexed_stagger_offset > 0:
+                self.logger.debug("Running staggered capture with indexed offset = {:.3f} secs".format(indexed_stagger_offset))
+                time.sleep(indexed_stagger_offset)
+                
         try:
             self.camera.capture(self.image_io, format='jpeg', use_video_port=True)
             if (blink_led):

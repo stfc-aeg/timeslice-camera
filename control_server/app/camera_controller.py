@@ -397,7 +397,8 @@ class CameraController(object):
             if self.camera_enabled[camera]:
                 self.camera_capture_state[camera] = CameraController.CAPTURE_STATE_CAPTURING
 
-        self.control_mcast_client.send("capture id=0 test=1")
+        self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(
+                                         (1 if self.stagger_enable == True else 0), self.stagger_offset))
 
     def do_retrieve(self):
 

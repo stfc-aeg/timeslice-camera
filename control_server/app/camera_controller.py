@@ -77,9 +77,19 @@ class CameraController(object):
         self.retrieve_time = 0.0
         self.render_time = 0.0
 
-        self.render_path = self.output_path
+        self.render_path = os.path.join(self.output_path, "renders")
+        self.image_path = os.path.join(self.output_path, "temp_image_files")
+        self.current_image_path = self.image_path
+        
         self.render_timestamp = ""
         self.render_loop = 1
+        self.render_framerate = 24
+        self.render_format = 'mp4'
+        self.render_format_codec = {
+            'mp4' : 'libx264',
+            'mkv' : 'copy',
+            'avi' : 'copy',
+        }
 
         self.stagger_enable = False
         self.stagger_offset = 0
@@ -187,7 +197,7 @@ class CameraController(object):
             render_elapsed_time = time.time() - self.retrieve_time
 
             if render_state is None:
-                if render_elapsed_time > self.render_timeout:
+                if render_elapsed_time > (self.render_timeout * self.render_loop):
                     self.capture_status = "Timeslice render timed out"
                     self.capture_state = CameraController.CAPTURE_STATE_IDLE
             else:
@@ -381,13 +391,15 @@ class CameraController(object):
         # Define the output file location with a timestamped directory within the output path and
         # create the output directory if necessary
         self.render_timestamp = time.strftime("%Y%m%d-%H%M%S")
-        self.render_path = os.path.join(self.output_path, "timeslice_{}".format(self.render_timestamp))
-        logging.info("Writing output files to path {}".format(self.render_path))
+        
+        self.current_image_path = os.path.join(self.image_path, "timeslice_{}".format(self.render_timestamp))
+        
+        logging.info("Writing image files to path {}".format(self.current_image_path))
         try:
-            os.makedirs(self.render_path)
+            os.makedirs(self.current_image_path)
         except OSError, e:
-            if not os.path.isdir(self.render_path):
-                self.capture_status = "Failed to create output path {} : {}".format(self.render_path, e)
+            if not os.path.isdir(self.current_image_path):
+                self.capture_status = "Failed to create image file path {} : {}".format(self.current_image_path, e)
                 logging.error(self.capture_status)
 
         # Set the capture state to capturing, set the capture time
@@ -431,21 +443,21 @@ class CameraController(object):
         
         # Squash file list to ensure files are contiguously numbered
         
-        src_files = sorted(glob.glob(os.path.join(self.render_path, "image_*.jpg")))
+        src_files = sorted(glob.glob(os.path.join(self.current_image_path, "image_*.jpg")))
         num_src_files = len(src_files)        
         squashed_files = []
         num_squashed = 0
         dst_idx = 1
         
         for src_file in src_files:
-            dst_file = (os.path.join(self.render_path, "image_{:03d}.jpg".format(dst_idx)))
+            dst_file = (os.path.join(self.current_image_path, "image_{:03d}.jpg".format(dst_idx)))
             if src_file != dst_file:
                 num_squashed += 1
                 os.rename(src_file, dst_file)
             squashed_files.append(dst_file)
             dst_idx += 1
             
-        logging.info("Squashed {} image files out of {} in render path {}".format(num_squashed, num_src_files, self.render_path))
+        logging.info("Squashed {} image files out of {} in render path {}".format(num_squashed, num_src_files, self.current_image_path))
         
         # Copy image files in order to generate the correct number of loops for rendering
         
@@ -453,17 +465,18 @@ class CameraController(object):
         
         for loop in range(self.render_loop-1):
             for src_file in squashed_files:
-                dst_file = os.path.join(self.render_path, "image_{:03d}.jpg".format(dst_idx))
+                dst_file = os.path.join(self.current_image_path, "image_{:03d}.jpg".format(dst_idx))
                 shutil.copy2(src_file, dst_file)
                 dst_idx += 1
         
         logging.info("Created a total of {} image files from {} for {} render loops at path {}".format(
-                    dst_idx-1, num_src_files, self.render_loop, self.render_path))
+                    dst_idx-1, num_src_files, self.render_loop, self.current_image_path))
         
-        input_file_pattern = os.path.join(self.render_path, "image_%03d.jpg")
-        output_file = os.path.join(self.render_path, "timeslice_{}.mkv".format(self.render_timestamp))
+        input_file_pattern = os.path.join(self.current_image_path, "image_%03d.jpg")
+        output_file = os.path.join(self.render_path, "timeslice_{}.{}".format(self.render_timestamp, self.render_format))
 
-        render_cmd = "ffmpeg -framerate 2 -i \'{}\' -codec copy -y {}".format(input_file_pattern, output_file)
+        render_cmd = "ffmpeg -framerate {} -i \'{}\' -codec {} -y {}".format(
+                        self.render_framerate, input_file_pattern, self.render_format_codec[self.render_format], output_file)
         logging.info("Launching render process with command: {}".format(render_cmd))
 
         self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -526,7 +539,7 @@ class CameraController(object):
             self.camera_capture_state[id] = CameraController.CAPTURE_STATE_RETRIEVED
 
             if image_data is not None and len(image_data) > 0:
-                image_file_name = os.path.join(self.render_path, "image_{:03d}.jpg".format(id))
+                image_file_name = os.path.join(self.current_image_path, "image_{:03d}.jpg".format(id))
                 image_file = open(image_file_name, 'wb')
                 image_file.write(image_data)
                 image_file.close()

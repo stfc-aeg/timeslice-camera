@@ -23,7 +23,7 @@ def main():
     tornado.options.define("http_port", default=8888, help="Set HTTP server port")
     tornado.options.define("ctrl_addr", default="0.0.0.0", help="Set camera control server address")
     tornado.options.define("ctrl_port", default=8008, help="Set camera control server port")
-    tornado.options.define("output_path", default="/tmp", help="Set the file path for writing output files")
+    tornado.options.define("output_path", default="/tmp/timeslice", help="Set the file path for writing output files")
 
     # Parse the command line options
     tornado.options.parse_command_line()

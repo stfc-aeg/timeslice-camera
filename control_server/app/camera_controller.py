@@ -51,9 +51,9 @@ class CameraController(object):
             self.camera_enabled[cam] = 1
 
         self.camera_params = {
-            'resolution'    : '1920x1080',
+            'resolution'    : '1024x768',
             'framerate'     : '30',
-            'shutter_speed' : '3000',
+            'shutter_speed' : '300000',
             'iso'           : '100',
             'exposure_mode' : 'fixedfps',
             'color_effects' : 'None',
@@ -345,7 +345,7 @@ class CameraController(object):
                     config_changed = True
                 self.camera_params[param] = params[param][-1]
             elif param == 'configure':
-                do_configure = params[param][-1]
+                do_configure = True if params[param][-1] == '1' else False
             else:
                 logging.warning("Attempting to set unknown camera parameter: {}".format(param))
 

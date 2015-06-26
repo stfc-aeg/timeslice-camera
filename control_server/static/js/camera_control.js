@@ -102,27 +102,31 @@ function config_camera_pane()
 	}
 
 	$('#config-resolution-select').change(function() {
-	    post_camera_config_change("resolution", $(this).val());
+	    post_camera_config_change(false); //"resolution", $(this).val());
 	});
 
 	$('#config-iso-select').change(function() {
-	    post_camera_config_change("iso", $(this).val());
+	    post_camera_config_change(false); //"iso", $(this).val());
 	});
 
 	$('#config-shutter-select').change(function() {
-	    post_camera_config_change("shutter_speed", $(this).val());
+	    post_camera_config_change(false); //"shutter_speed", $(this).val());
 	});
 
 	$('#camera-config-button').click(function() {
-	    console.log("Camera config button clicked");
-	    post_camera_config_change("configure", 1)
+	    post_camera_config_change(true);
 	});
 
 
-	function post_camera_config_change(param, value)
+	function post_camera_config_change(do_config)
 	{
-	    console.log("Posting config change: param: " + param + " value: " + value);
-	    $.post("/camera_config?" + param + "=" + value, function(data) {
+	    resolution = $('#config-resolution-select').val();
+	    iso = $('#config-iso-select').val();
+	    shutter_speed = $('#config-shutter-select').val();
+	    
+	    configure = (do_config == true) ? '1' : '0';
+	    
+	    $.post("/camera_config?resolution=" + resolution + "&iso=" + iso + "&shutter_speed=" + shutter_speed + "&configure=" + configure, function(data) {
 
 	    });
 	}

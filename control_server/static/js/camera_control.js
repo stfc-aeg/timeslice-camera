@@ -8,7 +8,7 @@ var icam = 0;
 
 var capture_stagger_enable = 0;
 
-var preview_enable = false;
+var preview_enable = 0;
 var preview_camera_select = 1;
 var preview_update_time = 1;
 
@@ -134,6 +134,20 @@ function config_camera_pane()
 
 function config_system_pane()
 {
+	
+	// Set up monitor enable checkbox and sync state with server
+	$("[name='monitor-enable-checkbox']").bootstrapSwitch();
+	$.get('/monitor', function(data) {
+	    monitor_state = parseInt(data)
+	    //console.log(monitor_state)
+	    $("[name='monitor-enable-checkbox']").bootstrapSwitch('state', monitor_state, true);
+	});
+
+	$('input[name="monitor-enable-checkbox"]').on('switchChange.bootstrapSwitch', function(event, state) {
+	    $.post('/monitor?enable=' + (state == true ? 1 : 0))
+	});
+
+
 	for ( var group = 0; group < max_groups; group++)
 	{
 	    var offset = group * cameras_per_group;
@@ -240,20 +254,29 @@ function config_system_pane()
 
 function config_preview_pane()
 {
-	// Set up monitor enable checkbox and sync state with server
-	$("[name='monitor-enable-checkbox']").bootstrapSwitch();
-	$.get('/monitor', function(data) {
-	    monitor_state = parseInt(data)
-	    //console.log(monitor_state)
-	    $("[name='monitor-enable-checkbox']").bootstrapSwitch('state', monitor_state, true);
-	});
-
-	$('input[name="monitor-enable-checkbox"]').on('switchChange.bootstrapSwitch', function(event, state) {
-	    $.post('/monitor?enable=' + (state == true ? 1 : 0))
-	});
-
 	$("[name='preview-enable-checkbox']").bootstrapSwitch();
-	$("[name='preview-enable-checkbox']").bootstrapSwitch('state', preview_enable, true);
+	
+	update_preview_config();
+	
+	function update_preview_config() 
+	{
+		$.getJSON("/preview_config", function(response) 
+		{
+			preview_enable = parseInt(response.enable);
+			$("[name='preview-enable-checkbox']").bootstrapSwitch('state', preview_enable, true);
+			$(function() {
+				$('#preview-camera-select option').filter(function() {
+					return ($(this).text() == response.camera);
+				}).prop('selected', true)
+			});
+			$(function() {
+				$('#preview-update-select option').filter(function() {
+					return ($(this).text() == response.update);
+				}).prop('selected', true)
+			});
+		});
+	}
+	
 
 	for (var icam = 1; icam <= max_cameras; icam++)
 	{
@@ -268,7 +291,7 @@ function config_preview_pane()
 	    post_preview_change();
 	});
 
-	$('#preview-update-rate').change(function() {
+	$('#preview-update-select').change(function() {
 	    post_preview_change();
 	});
 
@@ -276,8 +299,8 @@ function config_preview_pane()
 	{
 	    preview_enable = $("[name='preview-enable-checkbox']").bootstrapSwitch('state');
 	    preview_camera_select = $('#preview-camera-select').val();
-	    preview_update_time = parseInt($('#preview-update-rate').val());
-	    $.post("/preview?enable=" + (preview_enable == true ? 1 : 0) + "&camera=" + preview_camera_select + "&update=" + preview_update_time);
+	    preview_update_time = parseInt($('#preview-update-select').val());
+	    $.post("/preview_config?enable=" + (preview_enable == true ? 1 : 0) + "&camera=" + preview_camera_select + "&update=" + preview_update_time);
 	}
 
 	poll_preview_image();

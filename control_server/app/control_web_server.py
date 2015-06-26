@@ -61,6 +61,17 @@ class PreviewHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.write(self.application.camera_controller.get_preview_image())
 
+class PreviewConfigHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        response = {}
+        response['enable'] = '1' if self.application.camera_controller.get_preview_enable() == True else '0'
+        response['camera'] = self.application.camera_controller.get_preview_camera()
+        response['update'] = self.application.camera_controller.get_preview_update()
+        
+        self.set_header("Content-Type", "application/json")
+        self.write(json.dumps(response))
+        
     def post(self):
         enable = True if self.get_query_argument('enable', default='0') == '1' else False
         camera = int(self.get_query_argument('camera', default='1'))
@@ -134,6 +145,7 @@ class CameraWebServer(object):
             (r"/capture_config", CaptureConfigHandler),
             (r"/monitor", MonitorHandler),
             (r"/preview", PreviewHandler),
+            (r"/preview_config", PreviewConfigHandler),
             (r"/camera_version", CameraVersionHandler),
             (r"/camera_state", CameraStateHandler),
             (r"/camera_enable", CameraEnableHandler),

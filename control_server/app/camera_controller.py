@@ -100,8 +100,8 @@ class CameraController(object):
         self.camera_monitor_loop = self.camera_monitor_loop_ratio
 
         self.preview_enable = False
-        self.preview_camera = 0
-        self.preview_update = 0
+        self.preview_camera = 1
+        self.preview_update = 1
         self.preview_time = 0.0
 
         self.preview_id = 0
@@ -385,6 +385,18 @@ class CameraController(object):
         self.preview_enable = enable
         self.preview_camera = camera
         self.preview_update = update
+        
+    def get_preview_enable(self):
+        
+        return self.preview_enable
+    
+    def get_preview_camera(self):
+        
+        return self.preview_camera
+    
+    def get_preview_update(self):
+        
+        return self.preview_update
 
     def do_capture(self):
 

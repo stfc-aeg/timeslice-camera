@@ -79,9 +79,9 @@ class CameraServer(SocketServer.UDPServer):
             'brightness'    : [ 50, lambda val_str: int(val_str) ],
         }
 
-        # Install a signal handler
-        signal.signal(signal.SIGINT, self.sigint_handler)
-
+        # Install a signal handler for INT and TERM signals
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
         self.run_server = True
 
         self.logger.info("Camera server starting up with ID {} (version {} {})".format(
@@ -100,9 +100,9 @@ class CameraServer(SocketServer.UDPServer):
         self.led.set_colour(LedDriver.OFF)
         self.logger.info("Camera server ID {} shutdown".format(self.id))
 
-    def sigint_handler(self, signum, frame):
+    def signal_handler(self, signum, frame):
 
-        self.logger.info("Interrupt signal received, shutting down")
+        self.logger.info("Signal {} received, shutting down".format(signum))
         self.run_server = False
 
     def init_camera_defaults(self):

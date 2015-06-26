@@ -245,7 +245,7 @@ function config_system_pane()
 	            $('#configure-state').removeClass('label-danger').addClass('label-success');
 	        }
 
-	        $('#render-path').html(response.render_path);
+	        $('#last-render-file').html(response.last_render_file);
 	    });
 	    setTimeout(poll_camera_state, 1000);
 	}

@@ -80,6 +80,8 @@ class CameraController(object):
         self.render_path = os.path.join(self.output_path, "renders")
         self.image_path = os.path.join(self.output_path, "temp_image_files")
         self.current_image_path = self.image_path
+        self.render_file = "None"
+        self.last_render_file = "None"
         
         self.render_timestamp = ""
         self.render_loop = 1
@@ -203,6 +205,7 @@ class CameraController(object):
             else:
                 (render_stdout, render_stderr) = self.render_process.communicate()
                 if render_state == 0:
+                    self.last_render_file = self.render_file
                     self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
                     logging.info(self.capture_status)
                 else:
@@ -315,6 +318,10 @@ class CameraController(object):
 
         return self.render_path
 
+    def get_last_render_file(self):
+        
+        return self.last_render_file
+    
     def get_render_loop(self):
 
         return self.render_loop
@@ -485,10 +492,10 @@ class CameraController(object):
                     dst_idx-1, num_src_files, self.render_loop, self.current_image_path))
         
         input_file_pattern = os.path.join(self.current_image_path, "image_%03d.jpg")
-        output_file = os.path.join(self.render_path, "timeslice_{}.{}".format(self.render_timestamp, self.render_format))
+        self.render_file = os.path.join(self.render_path, "timeslice_{}.{}".format(self.render_timestamp, self.render_format))
 
         render_cmd = "ffmpeg -framerate {} -i \'{}\' -codec {} -y {}".format(
-                        self.render_framerate, input_file_pattern, self.render_format_codec[self.render_format], output_file)
+                        self.render_framerate, input_file_pattern, self.render_format_codec[self.render_format], self.render_file)
         logging.info("Launching render process with command: {}".format(render_cmd))
 
         self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)

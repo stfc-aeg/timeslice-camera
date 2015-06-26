@@ -4,6 +4,7 @@ var max_cameras = 48
 var cameras_per_group = 8;
 var max_groups = max_cameras / cameras_per_group;
 var camera_enable = [];
+var camera_state = [];
 var icam = 0;
 
 var capture_stagger_enable = 0;
@@ -207,6 +208,19 @@ function config_system_pane()
 	    post_camera_enable();
 	});
 
+	$('#camera-enable-alive').click(function() {
+		for (var icam = 1; icam <= max_cameras; icam++)
+		{
+			camera_enable[icam-1] = (camera_state[icam-1] == 1 ? 1 : 0);
+			if (camera_enable[icam-1] == 1) {
+				$('#camera-state-'+icam).addClass('active');
+			} else {
+				$('#camera-state-'+icam).removeClass('active');
+			}		
+		}
+		post_camera_enable();
+	});
+	
 	poll_camera_state();
 
 	function poll_camera_state()
@@ -228,6 +242,8 @@ function config_system_pane()
 	             }
 	        }
 	        camera_enable = response.camera_enable;
+	        camera_state = response.camera_state;
+	        
 	        $('#system-state').html(response.system_status);
 	        if (response.system_state == 0) {
 	            $('#system-state').removeClass('label-success').addClass('label-danger');

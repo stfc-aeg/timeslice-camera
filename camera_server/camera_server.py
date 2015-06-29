@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import threading
 import socket
 import struct
@@ -12,6 +14,7 @@ import io
 import struct
 import sys
 import signal
+import atexit
 
 import logger
 import camera_command_parser
@@ -87,6 +90,57 @@ class CameraServer(SocketServer.UDPServer):
         self.logger.info("Camera server starting up with ID {} (version {} {})".format(
             self.id, self.version_hash, time.ctime(int(self.version_time))))
 
+    def daemonize(self):
+
+        self.stdin = "/dev/null"
+        self.stderr = "/dev/null"
+        self.stdout = "/dev/null"
+        self.pidfile = "/var/run/camera_server.pid"
+
+        try:
+            pid = os.fork()
+            if pid > 0:
+                # exit first parent
+                sys.exit(0)
+        except OSError, e:
+            sys.stderr.write(
+                "fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+            sys.exit(1)
+
+        # decouple from parent environment
+        os.chdir("/")
+        os.setsid()
+        os.umask(0)
+
+        # do second fork
+        try:
+            pid = os.fork()
+            if pid > 0:
+                # exit from second parent
+                sys.exit(0)
+        except OSError, e:
+            sys.stderr.write(
+                "fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+            sys.exit(1)
+
+        # redirect standard file descriptors
+        sys.stdout.flush()
+        sys.stderr.flush()
+        si = file(self.stdin, 'r')
+        so = file(self.stdout, 'a+')
+        se = file(self.stderr, 'a+', 0)
+        os.dup2(si.fileno(), sys.stdin.fileno())
+        os.dup2(so.fileno(), sys.stdout.fileno())
+        os.dup2(se.fileno(), sys.stderr.fileno())
+
+        # write pidfile
+        atexit.register(self.delete_pidfile)
+        pid = str(os.getpid())
+        file(self.pidfile,'w+').write("%s\n" % pid)
+
+    def delete_pidfile(self):
+        os.remove(self.pidfile)
+
     def run(self):
 
         self.run_server = True
@@ -140,13 +194,13 @@ class CameraServer(SocketServer.UDPServer):
 
         self.image_io.seek(0)
         self.image_io.truncate()
-        
+
         if stagger_enable:
             indexed_stagger_offset = (1.0 * stagger_offset * self.id) / 1000.0
             if indexed_stagger_offset > 0:
                 self.logger.debug("Running staggered capture with indexed offset = {:.3f} secs".format(indexed_stagger_offset))
                 time.sleep(indexed_stagger_offset)
-                
+
         try:
             self.camera.capture(self.image_io, format='jpeg', use_video_port=True)
             if (blink_led):
@@ -203,6 +257,8 @@ def parse_args():
                         #metavar="debug|info|warning|error|none",
                         choices=['debug', 'info', 'warning', 'error', 'none'],
                         help="Set the logging level")
+    parser.add_argument("--daemonize", action="store_true", dest="daemonize", default=False,
+                        help="Daemonize camera server process")
 
     args = parser.parse_args()
 
@@ -227,6 +283,9 @@ def main():
     logger.setup_logger('camera_server', args.logging)
 
     server = CameraServer(args)
+
+    if args.daemonize:
+        server.daemonize()
     server.run()
 
 if __name__ == '__main__':

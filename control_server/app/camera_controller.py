@@ -117,7 +117,7 @@ class CameraController(object):
         self.configure_timeout = 5.0
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
-        self.render_timeout = 5.0
+        self.render_timeout = 20.0
         
         self.capture_timeout_staggered = self.capture_timeout
 

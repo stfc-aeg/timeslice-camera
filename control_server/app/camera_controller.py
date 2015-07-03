@@ -82,7 +82,7 @@ class CameraController(object):
         self.current_image_path = self.image_path
         self.render_file = "None"
         self.last_render_file = "None"
-        
+
         self.render_timestamp = ""
         self.render_loop = 1
         self.render_framerate = 24
@@ -118,7 +118,7 @@ class CameraController(object):
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
         self.render_timeout = 5.0
-        
+
         self.capture_timeout_staggered = self.capture_timeout
 
         self.controller_period = 100
@@ -319,9 +319,9 @@ class CameraController(object):
         return self.render_path
 
     def get_last_render_file(self):
-        
+
         return self.last_render_file
-    
+
     def get_render_loop(self):
 
         return self.render_loop
@@ -392,17 +392,17 @@ class CameraController(object):
         self.preview_enable = enable
         self.preview_camera = camera
         self.preview_update = update
-        
+
     def get_preview_enable(self):
-        
+
         return self.preview_enable
-    
+
     def get_preview_camera(self):
-        
+
         return self.preview_camera
-    
+
     def get_preview_update(self):
-        
+
         return self.preview_update
 
     def do_capture(self):
@@ -410,9 +410,9 @@ class CameraController(object):
         # Define the output file location with a timestamped directory within the output path and
         # create the output directory if necessary
         self.render_timestamp = time.strftime("%Y%m%d-%H%M%S")
-        
+
         self.current_image_path = os.path.join(self.image_path, "timeslice_{}".format(self.render_timestamp))
-        
+
         logging.info("Writing image files to path {}".format(self.current_image_path))
         try:
             os.makedirs(self.current_image_path)
@@ -437,7 +437,7 @@ class CameraController(object):
         else:
             self.capture_timeout_staggered = self.capture_timeout
 
-        stagger_enable = 1 if self.stagger_enable == True else 0        
+        stagger_enable = 1 if self.stagger_enable == True else 0
         self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(stagger_enable, self.stagger_offset))
 
     def do_retrieve(self):
@@ -459,15 +459,15 @@ class CameraController(object):
         self.capture_state = CameraController.CAPTURE_STATE_RENDERING
         self.render_time = time.time()
         self.capture_status = "Timeslice render in progress"
-        
+
         # Squash file list to ensure files are contiguously numbered
-        
+
         src_files = sorted(glob.glob(os.path.join(self.current_image_path, "image_*.jpg")))
-        num_src_files = len(src_files)        
+        num_src_files = len(src_files)
         squashed_files = []
         num_squashed = 0
         dst_idx = 1
-        
+
         for src_file in src_files:
             dst_file = (os.path.join(self.current_image_path, "image_{:03d}.jpg".format(dst_idx)))
             if src_file != dst_file:
@@ -475,22 +475,22 @@ class CameraController(object):
                 os.rename(src_file, dst_file)
             squashed_files.append(dst_file)
             dst_idx += 1
-            
+
         logging.info("Squashed {} image files out of {} in render path {}".format(num_squashed, num_src_files, self.current_image_path))
-        
+
         # Copy image files in order to generate the correct number of loops for rendering
-        
+
         dst_idx = len(squashed_files) + 1
-        
+
         for loop in range(self.render_loop-1):
             for src_file in squashed_files:
                 dst_file = os.path.join(self.current_image_path, "image_{:03d}.jpg".format(dst_idx))
                 shutil.copy2(src_file, dst_file)
                 dst_idx += 1
-        
+
         logging.info("Created a total of {} image files from {} for {} render loops at path {}".format(
                     dst_idx-1, num_src_files, self.render_loop, self.current_image_path))
-        
+
         input_file_pattern = os.path.join(self.current_image_path, "image_%03d.jpg")
         self.render_file = os.path.join(self.render_path, "timeslice_{}.{}".format(self.render_timestamp, self.render_format))
 
@@ -568,3 +568,7 @@ class CameraController(object):
 
         self.preview_image_id = id
         self.preview_image = image_data
+
+    def do_calibrate(self, camera):
+
+        self.control_mcast_client.send("calibrate id={}".format(camera))

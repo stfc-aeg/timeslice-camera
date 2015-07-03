@@ -68,10 +68,10 @@ class PreviewConfigHandler(tornado.web.RequestHandler):
         response['enable'] = '1' if self.application.camera_controller.get_preview_enable() == True else '0'
         response['camera'] = self.application.camera_controller.get_preview_camera()
         response['update'] = self.application.camera_controller.get_preview_update()
-        
+
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))
-        
+
     def post(self):
         enable = True if self.get_query_argument('enable', default='0') == '1' else False
         camera = int(self.get_query_argument('camera', default='1'))
@@ -131,6 +131,19 @@ class CameraConfigHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))
 
+class CameraCalibrateHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        logging.info("Got calibrate GET request with query arguments {}".format(self.request.query_arguments))
+        self.write("OK")
+
+    def post(self):
+        logging.info("Got calibrate POST request with query arguments {}".format(self.request.query_arguments))
+        camera = int(self.get_query_argument('camera', default='1'))
+        self.application.camera_controller.do_calibrate(camera)
+
+        self.write("OK")
+
 class CameraWebServer(object):
 
     def __init__(self, camera_controller):
@@ -150,6 +163,7 @@ class CameraWebServer(object):
             (r"/camera_state", CameraStateHandler),
             (r"/camera_enable", CameraEnableHandler),
             (r"/camera_config", CameraConfigHandler),
+            (r"/calibrate", CameraCalibrateHandler),
         ], **settings)
 
 

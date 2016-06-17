@@ -440,6 +440,8 @@ class CameraController(object):
         stagger_enable = 1 if self.stagger_enable == True else 0        
         self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(stagger_enable, self.stagger_offset))
 
+        subprocess.Popen(shlex.split("aplay -N /home/pi/develop/projects/timeslice/control_server/static/audio/shutter.wav"))
+
     def do_retrieve(self):
 
         # Set the capture state to retrieving, set the capture time

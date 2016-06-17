@@ -47,7 +47,7 @@ class CameraController(object):
         self.camera_version_info   = [('Unknown', '0')] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
 
-        for cam in range(1,9):
+        for cam in range(1, CameraController.MAX_CAMERAS+1):
             self.camera_enabled[cam] = 1
 
         self.camera_params = {

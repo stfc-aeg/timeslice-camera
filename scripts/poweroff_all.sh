@@ -7,9 +7,14 @@ shift
 start=${start:=1}
 end=${end:=48}
 
+cmd=$@
+
 for node in $(seq $start $end); do 
   node_name="cam-${node}"
   echo -n "$node_name : "
-  ssh pi@$node_name 'cd /home/pi/develop/projects/timeslice/camera_server; git pull >/dev/null 2>&1 &'
+  ssh pi@$node_name sudo /sbin/poweroff
+
 done
+
+
 

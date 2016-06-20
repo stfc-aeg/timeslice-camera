@@ -5,7 +5,7 @@ shift
 end=${1}
 shift
 start=${start:=1}
-end=${end:=8}
+end=${end:=48}
 
 cmd=$@
 

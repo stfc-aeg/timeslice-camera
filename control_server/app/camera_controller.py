@@ -47,7 +47,7 @@ class CameraController(object):
         self.camera_version_info   = [('Unknown', '0')] * (CameraController.MAX_CAMERAS+1)
         self.camera_enabled = [0] * (CameraController.MAX_CAMERAS+1)
 
-        for cam in range(1,9):
+        for cam in range(1, CameraController.MAX_CAMERAS+1):
             self.camera_enabled[cam] = 1
 
         self.camera_params = {
@@ -117,7 +117,7 @@ class CameraController(object):
         self.configure_timeout = 5.0
         self.capture_timeout = 5.0
         self.retrieve_timeout = 5.0
-        self.render_timeout = 5.0
+        self.render_timeout = 20.0
 
         self.capture_timeout_staggered = self.capture_timeout
 
@@ -439,6 +439,8 @@ class CameraController(object):
 
         stagger_enable = 1 if self.stagger_enable == True else 0
         self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(stagger_enable, self.stagger_offset))
+
+        subprocess.Popen(shlex.split("aplay -N /home/pi/develop/projects/timeslice/control_server/static/audio/shutter.wav"))
 
     def do_retrieve(self):
 

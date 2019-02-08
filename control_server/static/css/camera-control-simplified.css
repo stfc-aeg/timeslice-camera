@@ -2,3 +2,8 @@ html, body {
     position: relative;
     height: 100%;
 }
+
+#countdown {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 130px;
+}

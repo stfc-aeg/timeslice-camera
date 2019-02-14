@@ -7,3 +7,26 @@ html, body {
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 130px;
 }
+
+.loader {
+    border: 16px solid #DBDBDB;
+    border-radius: 50%; /* creates a circle */
+    border-top: 16px solid #2ECC71;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -100px 0 0 -100px;
+    width: 200px;
+    height: 200px;
+    animation: spin 1s linear infinite; /* creates a 1 sec infinite animation; same speed from start to end */
+}
+  
+/* spin animation code */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loader-message {
+    margin-top: 25%;
+}

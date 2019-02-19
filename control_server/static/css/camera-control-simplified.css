@@ -30,3 +30,11 @@ html, body {
 #loader-message {
     margin-top: 25%;
 }
+
+#retake {
+    margin-right: 10%;
+}
+
+#save {
+    margin-left: 10%;
+}

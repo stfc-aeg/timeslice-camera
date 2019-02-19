@@ -47,8 +47,19 @@ function poll_camera_state()
 {
 	$.getJSON("/camera_state", function(response) {	        
         $('#loader-message').html(response.capture_status);
+        if(response.render_status == 3) {
+            intervalTime = clearTimeout(intervalTime);
+            renderRetakeSavePage();
+        }
     });
 
     // function called every 0.250 secs
-    setTimeout(poll_camera_state, 250);
+    intervalTime = setTimeout(poll_camera_state, 250);
+}
+
+
+function renderRetakeSavePage()
+{
+    $('#mainSection').html('<a href="#capture" class="btn btn-primary" id="retake">Retake</a>'+
+                           '<a href="#" class="btn btn-primary" id="save">Save</a>');
 }

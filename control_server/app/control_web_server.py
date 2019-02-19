@@ -108,6 +108,8 @@ class CameraStateHandler(tornado.web.RequestHandler):
         response['configure_state'] = self.application.camera_controller.get_configure_state()
         response['configure_status'] = self.application.camera_controller.get_configure_status()
         response['last_render_file'] = self.application.camera_controller.get_last_render_file()
+        response['render_status']=self.application.camera_controller.get_render_status()
+
 
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))

@@ -30,6 +30,11 @@ class CameraController(object):
     CAPTURE_STATE_RETRIEVED   = 5
     CAPTURE_STATE_RENDERING   = 6
 
+    RENDER_STATUS_IDLE = 0
+    RENDER_STATUS_RENDERING = 1
+    RENDER_STATUS_RENDERING_FAILED = 2
+    RENDER_STATUS_RENDERING_COMPLETED = 3
+
     def __init__(self, control_mcast_client, control_addr, control_port, output_path):
 
         self.control_mcast_client = control_mcast_client
@@ -71,6 +76,8 @@ class CameraController(object):
         self.camera_configure_state = [CameraController.CONFIGURE_STATE_NOT_READY] * (CameraController.MAX_CAMERAS+1)
         self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
         self.configure_status = "Not ready"
+
+        self.render_status = CameraController.RENDER_STATUS_IDLE
 
         self.configure_time = 0.0
         self.capture_time = 0.0
@@ -208,12 +215,14 @@ class CameraController(object):
                     self.last_render_file = self.render_file
                     self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
                     logging.info(self.capture_status)
+                    self.render_status = CameraController.RENDER_STATUS_IDLE
                 else:
                     self.capture_status = "Timeslice render failed with return code {}".format(render_state)
                     logging.error(self.capture_status)
                     logging.error("Render output:\n{}\n{}".format(render_stdout, render_stderr))
 
                 self.capture_state = CameraController.CAPTURE_STATE_IDLE
+                
 
     def handle_preview_update(self):
 
@@ -317,6 +326,10 @@ class CameraController(object):
     def get_render_path(self):
 
         return self.render_path
+
+    def get_render_status(self):
+        
+        return self.render_status
 
     def get_last_render_file(self):
 
@@ -458,6 +471,7 @@ class CameraController(object):
 
     def do_render(self):
 
+        self.render_status = CameraController.RENDER_STATUS_RENDERING
         self.capture_state = CameraController.CAPTURE_STATE_RENDERING
         self.render_time = time.time()
         self.capture_status = "Timeslice render in progress"
@@ -500,6 +514,7 @@ class CameraController(object):
                         self.render_framerate, input_file_pattern, self.render_format_codec[self.render_format], self.render_file)
         logging.info("Launching render process with command: {}".format(render_cmd))
 
+        self.render_status = CameraController.RENDER_STATUS_RENDERING_COMPLETED
         self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 

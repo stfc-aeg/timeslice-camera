@@ -54,9 +54,11 @@ function poll_camera_state()
         if(response.system_state == 0) {
             $('#system-state').removeClass('badge-success').addClass('badge-danger');
             $('#system-state').html('Not ready');
+            $('#captureButton').addClass('disabled');
         } else {
             $('#system-state').removeClass('badge-danger').addClass('badge-success');
             $('#system-state').html('Ready');
+            $('#captureButton').removeClass('disabled');
         }
 
         // dynamically updates the loader message element

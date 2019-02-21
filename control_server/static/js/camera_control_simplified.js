@@ -79,4 +79,21 @@ function renderRetakeSavePage()
 {
     $('#mainSection').html('<a href="#capture" class="btn btn-primary" id="retakeButton">Retake</a>'+
                            '<a href="#" class="btn btn-primary" id="saveButton">Save</a>');
+
+    // 'renderIndexPage' function called when 'Retake' button is clicked
+    $('#retakeButton').click(renderIndexPage);
+}
+
+function renderIndexPage()
+{
+    // sets class height to 100%
+    $('#mainSection').addClass('h-100');
+    // displays systems state element and 'Capture' button
+    $('#mainSection').html('<div class="col-md-12 h-50">'+
+                           '<h4><span id="system-state" class="badge"></span></h4></div>'+
+                           '<div class="col-md-12">'+
+                           '<a href="#capture" class="btn btn-primary" id="captureButton">Capture</a></div>');
+
+    // 'countdown_timer' function called when 'Capture' button is clicked
+    $('#captureButton').click(countdown_timer);
 }

@@ -3,6 +3,12 @@ html, body {
     height: 100%;
 }
 
+#system-state {
+    height: 40px;
+    width: 100px;
+    margin-top: 3%;
+}
+
 #countdown {
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 130px;
@@ -31,10 +37,10 @@ html, body {
     margin-top: 25%;
 }
 
-#retake {
+#retakeButton {
     margin-right: 10%;
 }
 
-#save {
+#saveButton {
     margin-left: 10%;
 }

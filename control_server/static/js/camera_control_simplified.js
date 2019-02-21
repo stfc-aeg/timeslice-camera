@@ -1,10 +1,15 @@
-// 'countdown_timer' function called when capture button is clicked
-$('#capture').click(countdown_timer);
+poll_camera_state();
+
+// 'countdown_timer' function called when 'Capture' button is clicked
+$('#captureButton').click(countdown_timer);
 
 // 5 second countdown timer; countdown element is dynamically updated
 function countdown_timer()
 {   
-    // creates a countdown element in mainsection
+    // removes class height to allow countdown element to be centered
+    $('#mainSection').removeClass('h-100')
+
+    // displays the countdown element
     $('#mainSection').html('<div id="countdown">5</div>');
 
     var timeLeft = 4;
@@ -12,7 +17,7 @@ function countdown_timer()
         document.getElementById('countdown').innerHTML = timeLeft;
         timeLeft -= 1;
 
-        // 'GO!' dispalyed and 'capture' function called when countdown timer reaches 0
+        // 'GO!' dispayed when countdown timer reaches 0
         if(timeLeft <0) {
             clearInterval(intervalTime);
             document.getElementById('countdown').innerHTML = "GO!";
@@ -21,8 +26,6 @@ function countdown_timer()
             setTimeout(capture, 500);
             // 'loader' function called 0.5 secs after 'GO!' is displayed
             setTimeout(loader, 500);
-            // 'poll_camera_state' function called when countdown timer reaches 0
-            poll_camera_state();
         }
     }, 1000);
 }
@@ -33,7 +36,7 @@ function capture()
     $.post('/capture');
 }    
 
-// loading animation displayed
+// displays the loading element
 function loader()
 {
     if ($('#countdown').html() == "GO!") {
@@ -42,24 +45,36 @@ function loader()
     }
 }
 
-// polls camera state info and dynamically updates the loader message element
+// polls camera state info
 function poll_camera_state()
 {
-	$.getJSON("/camera_state", function(response) {	        
+	$.getJSON("/camera_state", function(response) {	     
+        
+        // dynamically updates the system state element
+        if(response.system_state == 0) {
+            $('#system-state').removeClass('badge-success').addClass('badge-danger');
+            $('#system-state').html('Not ready');
+        } else {
+            $('#system-state').removeClass('badge-danger').addClass('badge-success');
+            $('#system-state').html('Ready');
+        }
+
+        // dynamically updates the loader message element
         $('#loader-message').html(response.capture_status);
+
+        // 'renderRetakeSavePage' function called if rendering completed
         if(response.render_status == 3) {
-            intervalTime = clearTimeout(intervalTime);
             renderRetakeSavePage();
         }
     });
 
     // function called every 0.250 secs
-    intervalTime = setTimeout(poll_camera_state, 250);
+    setTimeout(poll_camera_state, 250);
 }
 
-
+// displays 'Retake' & 'Save' buttons
 function renderRetakeSavePage()
 {
-    $('#mainSection').html('<a href="#capture" class="btn btn-primary" id="retake">Retake</a>'+
-                           '<a href="#" class="btn btn-primary" id="save">Save</a>');
+    $('#mainSection').html('<a href="#capture" class="btn btn-primary" id="retakeButton">Retake</a>'+
+                           '<a href="#" class="btn btn-primary" id="saveButton">Save</a>');
 }

@@ -164,4 +164,6 @@ function renderFinalPage() {
                             '</div>'+
                             '</div>'+
                             '</div>') 
+
+    $('#finish-button').click(renderIndexPage);
 }

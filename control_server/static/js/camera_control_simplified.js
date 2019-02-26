@@ -126,4 +126,42 @@ function renderAccessCodePage() {
                             '</div>'+
                             '</div>'+
                             '</div>')
+
+    $('#done-button').click(renderFinalPage);
+}
+
+function renderFinalPage() {
+    $('#main-section').html('<div class="container-fluid h-100">'+
+                            '<div class="row text-center">'+
+                            '<div class="col-md-12">'+
+                            '<h2>&nbsp;</h2><h2>&nbsp;</h2><h2>&nbsp;</h2><h2>&nbsp;</h2>'+
+                            '</div>'+
+                            '</div>'+
+                            '<div class="row text-center">'+
+                            '<div class="col-md-3"></div>'+
+                            '<div class="col-md-6">'+
+                            '<h4>Your video was successfully uploaded and is ready to be downloaded.<br>Please do not forget to take your card with you.</h4>'+
+                            '<h4>&nbsp;</h4><h4>&nbsp;</h4><h4>&nbsp;</h4>'+
+                            '<h4>Thank you</h4>'+
+                            '</div>'+
+                            '<div class="col-md-3"></div>'+
+                            '</div>'+
+                            '<div class="row text-center">'+
+                            '<div class="col-md-12">'+
+                            '<h2>&nbsp;</h2>'+
+                            '<h2>&nbsp;</h2>'+
+                            '</div>'+
+                            '</div>'+
+                            '<div class="row text-center">'+
+                            '<div class="col-md-12">'+
+                            '<a class="btn btn-primary" id="finish-button" href="#"><h4>Finish</h4></a>'+
+                            '</div>'+
+                            '</div>'+
+                            '<div class="row text-center">'+
+                            '<div class="col-md-12">'+
+                            '<h2>&nbsp;</h2>'+
+                            '<h2>&nbsp;</h2>'+
+                            '</div>'+
+                            '</div>'+
+                            '</div>') 
 }

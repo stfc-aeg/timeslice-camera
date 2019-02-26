@@ -16,13 +16,12 @@ html, body {
 }
 
 #countdown {
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size: 130px;
 }
 
 .loader {
     border: 16px solid #DBDBDB;
-    border-radius: 50%; /* creates a circle */
+    border-radius: 50%; /* Creates a circle */
     border-top: 16px solid #2ECC71;
     position: absolute;
     left: 50%;
@@ -30,10 +29,10 @@ html, body {
     margin: -100px 0 0 -100px;
     width: 200px;
     height: 200px;
-    animation: spin 1s linear infinite; /* creates a 1 sec infinite animation; same speed from start to end */
+    animation: spin 1s linear infinite; /* Creates a 1 sec infinite animation; same speed from start to end */
 }
   
-/* spin animation code */
+/* Animation code */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -43,11 +42,11 @@ html, body {
     margin-top: 25%;
 }
 
-#retakeButton {
+#retake-button {
     margin-right: 10%;
 }
 
-#saveButton {
+#save-button {
     margin-left: 10%;
 }
 

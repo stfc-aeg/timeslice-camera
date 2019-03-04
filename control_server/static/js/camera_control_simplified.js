@@ -6,10 +6,16 @@ function renderIndexPage() {
     // Sets class height to 100% to allow for vertical centering
     $('#main-section').addClass('h-100');
 
-    $('#main-section').html('<div class="col-md-12 h-50">'+
-                            '<span class="badge" id="system-state"></span></div>'+
+    $('#main-section').html('<div class="row h-50">'+
                             '<div class="col-md-12">'+
-                            '<a class="btn btn-primary" id="capture-button" href="#"><h4>Capture</h4></a></div>');
+                            '<span class="badge" id="system-state"></span>'+
+                            '</div>'+
+                            '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-12">'+
+                            '<a class="btn btn-primary" id="capture-button" href="#"><h4>Capture</h4></a>'+
+                            '</div>'+
+                            '</div>');
 
     $('#capture-button').click(renderCountdownPage);
 }
@@ -18,7 +24,11 @@ function renderCountdownPage() {
     // Removes class height to allow countdown element to be centered
     $('#main-section').removeClass('h-100');
     
-    $('#main-section').html('<div id="countdown">5</div>');
+    $('#main-section').html('<div class="row">'+
+                            '<div class="col-md-12">'+
+                            '<div id="countdown">5</div>'+
+                            '</div>'+
+                            '</div>')
 
     // 5 second countdown timer; countdown element is dynamically updated
     var timeLeft = 4;
@@ -42,8 +52,17 @@ function renderCountdownPage() {
 
 function renderLoadingPage() {
     if ($('#countdown').html() == "GO!") {
-        $('#main-section').html('<div class="loader"></div>'+
-                                '<div id="loader-message"></div>');
+        $('#main-section').html('<div class="row d-flex justify-content-center">'+
+                                '<div class="col-md-12">'+
+                                '<div id="loader1" class="loader"></div>'+
+                                '</div>'+
+                                '</div>'+
+                                '<div class="row">'+
+                                '<div class="col-md-4"></div>'+'<div class="col-md-4">'+
+                                '<div id="loader-message">&nbsp;</div>'+
+                                '</div>'+
+                                '<div class="col-md-4"></div>'+
+                                '</div>');
     }
 }
 
@@ -72,8 +91,12 @@ function pollCameraState() {
 }
 
 function renderRetakeSavePage() {
-    $('#main-section').html('<a class="btn btn-primary" id="retake-button" href="#"><h4>Retake</h4></a>'+
-                            '<a class="btn btn-primary" id="save-button" href="#"><h4>Save</h4></a>');
+    $('#main-section').html('<div class="row">'+
+                            '<div class="col-md-12">'+
+                            '<a class="btn btn-primary" id="retake-button" href="#"><h4>Retake</h4></a>'+
+                            '<a class="btn btn-primary" id="save-button" href="#"><h4>Save</h4></a>'+
+                            '</div>'+
+                            '</div>');
 
     $('#retake-button').click(renderIndexPage);
 
@@ -81,25 +104,20 @@ function renderRetakeSavePage() {
 }
 
 function renderAccessCodePage() {
-    $('#main-section').addClass('h-100');
-
-    $('#main-section').html('<div class="container-fluid h-100">'+
-                            '<div class="row text-center">'+
-                            '<div class="col-md-12"><h2>&nbsp;</h2><h2>&nbsp;</h2></div>'+
-                            '</div>'+
-                            '<div class="row text-center">'+
+    $('#main-section').html('<div class="row">'+
                             '<div class="col-md-4"></div>'+
                             '<div class="col-md-4">'+
                             '<div><h2><b>Your access code is:</b></h2></div>'+
                             '<span class="badge badge-success" id="access-code"><h3>6701</h3></span>'+
                             '</div>'+
-                            '<div class="col-md-4">'+
+                            '<div class="col-md-4"></div>'+
+                            '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-12">'+
+                            '<h2>&nbsp;</h2><h2>&nbsp;</h2>'+
                             '</div>'+
                             '</div>'+
-                            '<div class="row text-center">'+
-                            '<div class="col-md-12"><h2>&nbsp;</h2><h2>&nbsp;</h2></div>'+
-                            '</div>'+
-                            '<div class="row text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-3"></div>'+
                             '<div class="col-md-6">'+
                             '<h4>Please write your access code on the card provided to you and follow the instructions on the back of the card to get a copy of your video.</h4>'+
@@ -108,22 +126,15 @@ function renderAccessCodePage() {
                             '</div>'+
                             '<div class="col-md-3"></div>'+
                             '</div>'+
-                            '<div class="row text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2>'+
-                            '<h2>&nbsp;</h2>'+
+                            '<h2>&nbsp;</h2><h2>&nbsp;</h2>'+
                             '</div>'+
                             '</div>'+
-                            '<div class="row text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<a class="btn btn-primary" id="done-button" href="#"><h4>Done</h4></a>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row text-center">'+
-                            '<div class="col-md-12">'+
                             '<h2>&nbsp;</h2>'+
-                            '<h2>&nbsp;</h2>'+
-                            '</div>'+
                             '</div>'+
                             '</div>')
 
@@ -131,13 +142,7 @@ function renderAccessCodePage() {
 }
 
 function renderFinalPage() {
-    $('#main-section').html('<div class="container-fluid h-100">'+
-                            '<div class="row text-center">'+
-                            '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2><h2>&nbsp;</h2><h2>&nbsp;</h2><h2>&nbsp;</h2>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row text-center">'+
+    $('#main-section').html('<div class="row">'+
                             '<div class="col-md-3"></div>'+
                             '<div class="col-md-6">'+
                             '<h4>Your video was successfully uploaded and is ready to be downloaded.<br>Please do not forget to take your card with you.</h4>'+
@@ -146,22 +151,15 @@ function renderFinalPage() {
                             '</div>'+
                             '<div class="col-md-3"></div>'+
                             '</div>'+
-                            '<div class="row text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<h2>&nbsp;</h2>'+
                             '<h2>&nbsp;</h2>'+
                             '</div>'+
                             '</div>'+
-                            '<div class="row text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<a class="btn btn-primary" id="finish-button" href="#"><h4>Finish</h4></a>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row text-center">'+
-                            '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2>'+
-                            '<h2>&nbsp;</h2>'+
-                            '</div>'+
                             '</div>'+
                             '</div>') 
 

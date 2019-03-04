@@ -52,7 +52,7 @@ function renderCountdownPage() {
 
 function renderLoadingPage() {
     if ($('#countdown').html() == "GO!") {
-        $('#main-section').html('<div class="row d-flex justify-content-center">'+
+        $('#main-section').html('<div class="row">'+
                                 '<div class="col-md-12">'+
                                 '<div id="loader1" class="loader"></div>'+
                                 '</div>'+
@@ -81,6 +81,10 @@ function pollCameraState() {
         }
 
         $('#loader-message').html(response.capture_status);
+
+        if(response.capture_state == 0) {
+            $('#loader1').hide();
+        }
 
         if(response.render_status == 3) {
             renderRetakeSavePage();

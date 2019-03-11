@@ -3,10 +3,8 @@ pollCameraState();
 $(document).ready(renderIndexPage);
 
 function renderIndexPage() {
-    // Sets class height to 100% to allow for vertical centering
-    $('#main-section').addClass('h-100');
-
-    $('#main-section').html('<div class="row h-50">'+
+    $('#main-section').html('<div class="container-fluid text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<span class="badge" id="system-state"></span>'+
                             '</div>'+
@@ -15,18 +13,20 @@ function renderIndexPage() {
                             '<div class="col-md-12">'+
                             '<a class="btn btn-primary" id="capture-button" href="#"><h4>Capture</h4></a>'+
                             '</div>'+
+                            '</div>'+
                             '</div>');
 
     $('#capture-button').click(renderCountdownPage);
 }
 
-function renderCountdownPage() {   
-    // Removes class height to allow countdown element to be centered
-    $('#main-section').removeClass('h-100');
-    
-    $('#main-section').html('<div class="row">'+
+function renderCountdownPage() {
+    $('#main-section').html('<div class="vertical-center">'+
+                            '<div class="container-fluid text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<div id="countdown">5</div>'+
+                            '</div>'+
+                            '</div>'+
                             '</div>'+
                             '</div>')
 
@@ -52,16 +52,21 @@ function renderCountdownPage() {
 
 function renderLoadingPage() {
     if ($('#countdown').html() == "GO!") {
-        $('#main-section').html('<div class="row">'+
+        $('#main-section').html('<div class="vertical-center">'+
+                                '<div class="container-fluid text-center">'+
+                                '<div class="row">'+
                                 '<div class="col-md-12">'+
                                 '<div id="loader1" class="loader"></div>'+
                                 '</div>'+
                                 '</div>'+
                                 '<div class="row">'+
-                                '<div class="col-md-4"></div>'+'<div class="col-md-4">'+
-                                '<div id="loader-message">&nbsp;</div>'+
+                                '<div class="col-md-4"></div>'+
+                                '<div class="col-md-4">'+
+                                '<div id="loader-message"><h4>&nbsp;</h4></div>'+
                                 '</div>'+
                                 '<div class="col-md-4"></div>'+
+                                '</div>'+
+                                '</div>'+
                                 '</div>');
     }
 }
@@ -80,7 +85,7 @@ function pollCameraState() {
             $('#capture-button').removeClass('disabled');
         }
 
-        $('#loader-message').html(response.capture_status);
+        $('#loader-message').html('<h4>'+response.capture_status+'</h4>');
 
         if(response.capture_state == 0) {
             $('#loader1').hide();
@@ -95,10 +100,14 @@ function pollCameraState() {
 }
 
 function renderRetakeSavePage() {
-    $('#main-section').html('<div class="row">'+
+    $('#main-section').html('<div class="vertical-center">'+
+                            '<div class="container-fluid text-center">'+
+                            '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<a class="btn btn-primary" id="retake-button" href="#"><h4>Retake</h4></a>'+
                             '<a class="btn btn-primary" id="save-button" href="#"><h4>Save</h4></a>'+
+                            '</div>'+
+                            '</div>'+
                             '</div>'+
                             '</div>');
 
@@ -108,37 +117,40 @@ function renderRetakeSavePage() {
 }
 
 function renderAccessCodePage() {
-    $('#main-section').html('<div class="row">'+
-                            '<div class="col-md-4"></div>'+
-                            '<div class="col-md-4">'+
-                            '<div><h2><b>Your access code is:</b></h2></div>'+
-                            '<span class="badge badge-success" id="access-code"><h3>6701</h3></span>'+
-                            '</div>'+
-                            '<div class="col-md-4"></div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2><h2>&nbsp;</h2>'+
-                            '</div>'+
-                            '</div>'+
+    $('#main-section').html('<div class="vertical-center">'+
+                            '<div class="container-fluid text-center">'+
                             '<div class="row">'+
                             '<div class="col-md-3"></div>'+
                             '<div class="col-md-6">'+
+                            '<div><h2><b>Your access code is:</b></h2></div>'+
+                            '<span class="badge badge-success" id="access-code"><h3>6701</h3></span>'+
+                            '</div>'+
+                            '<div class="col-md-3"></div>'+
+                            '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-12">'+
+                            '<h2>&nbsp;</h2>'+
+                            '</div>'+
+                            '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-1"></div>'+
+                            '<div class="col-md-10">'+
                             '<h4>Please write your access code on the card provided to you and follow the instructions on the back of the card to get a copy of your video.</h4>'+
                             '<h4>&nbsp;</h4>'+
                             '<h4>Please click Done when you are finished writing your access code.</h4>'+
                             '</div>'+
-                            '<div class="col-md-3"></div>'+
+                            '<div class="col-md-1"></div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2><h2>&nbsp;</h2>'+
+                            '<h2>&nbsp;</h2>'+
                             '</div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<a class="btn btn-primary" id="done-button" href="#"><h4>Done</h4></a>'+
-                            '<h2>&nbsp;</h2>'+
+                            '</div>'+
+                            '</div>'+
                             '</div>'+
                             '</div>')
 
@@ -146,24 +158,27 @@ function renderAccessCodePage() {
 }
 
 function renderFinalPage() {
-    $('#main-section').html('<div class="row">'+
-                            '<div class="col-md-3"></div>'+
-                            '<div class="col-md-6">'+
+    $('#main-section').html('<div class="vertical-center">'+
+                            '<div class="container-fluid text-center">'+
+                            '<div class="row">'+
+                            '<div class="col-md-1"></div>'+
+                            '<div class="col-md-10">'+
                             '<h4>Your video was successfully uploaded and is ready to be downloaded.<br>Please do not forget to take your card with you.</h4>'+
                             '<h4>&nbsp;</h4><h4>&nbsp;</h4><h4>&nbsp;</h4>'+
                             '<h4>Thank you</h4>'+
                             '</div>'+
-                            '<div class="col-md-3"></div>'+
+                            '<div class="col-md-1"></div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2>'+
                             '<h2>&nbsp;</h2>'+
                             '</div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
                             '<a class="btn btn-primary" id="finish-button" href="#"><h4>Finish</h4></a>'+
+                            '</div>'+
+                            '</div>'+
                             '</div>'+
                             '</div>') 
 

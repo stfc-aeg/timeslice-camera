@@ -11,9 +11,8 @@ html, body {
 }
 
 .btn {
-    height:50px;
-    width: 140px;
-    text-align: center;
+    height:75px;
+    width: 200px;
 }
 
 #system-state {

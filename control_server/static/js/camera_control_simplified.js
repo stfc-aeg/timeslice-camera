@@ -11,7 +11,7 @@ function renderIndexPage() {
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<a class="btn btn-primary" id="capture-button" href="#"><h4>Capture</h4></a>'+
+                            '<button class="btn btn-primary" id="capture-button"><h3>Capture</h3></button>'+
                             '</div>'+
                             '</div>'+
                             '</div>');
@@ -104,8 +104,8 @@ function renderRetakeSavePage() {
                             '<div class="container-fluid text-center">'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<a class="btn btn-primary" id="retake-button" href="#"><h4>Retake</h4></a>'+
-                            '<a class="btn btn-primary" id="save-button" href="#"><h4>Save</h4></a>'+
+                            '<button class="btn btn-primary" id="retake-button"><h3>Retake</h3></button>'+
+                            '<button class="btn btn-primary" id="save-button"><h3>Save</h3></button>'+
                             '</div>'+
                             '</div>'+
                             '</div>'+
@@ -148,7 +148,7 @@ function renderAccessCodePage() {
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<a class="btn btn-primary" id="done-button" href="#"><h4>Done</h4></a>'+
+                            '<button class="btn btn-primary" id="done-button"><h3>Done</h3></button>'+
                             '</div>'+
                             '</div>'+
                             '</div>'+
@@ -176,7 +176,7 @@ function renderFinalPage() {
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<a class="btn btn-primary" id="finish-button" href="#"><h4>Finish</h4></a>'+
+                            '<button class="btn btn-primary" id="finish-button"><h3>Finish</h3></button>'+
                             '</div>'+
                             '</div>'+
                             '</div>'+

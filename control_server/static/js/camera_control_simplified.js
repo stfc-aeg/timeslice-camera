@@ -14,6 +14,14 @@ function renderIndexPage() {
                             '<button class="btn btn-primary" id="capture-button"><h3>Capture</h3></button>'+
                             '</div>'+
                             '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-1"></div>'+
+                            '<div class="col-md-10">'+
+                            '<h4>&nbsp;</h4>'+
+                            '<div id="index-page-message"></div>'+
+                            '</div>'+
+                            '<div class="col-md-1"></div>'+
+                            '</div>'+
                             '</div>');
 
     $('#capture-button').click(renderCountdownPage);
@@ -79,10 +87,12 @@ function pollCameraState() {
             $('#system-state').removeClass('badge-success').addClass('badge-danger');
             $('#system-state').html('<h3>Not ready</h3>');
             $('#capture-button').addClass('disabled');
+            $('#index-page-message').html('<h4>Please wait until the system is ready to be able to capture a video!</h4>')
         } else {
             $('#system-state').removeClass('badge-danger').addClass('badge-success');
             $('#system-state').html('<h3>Ready</h3>');
             $('#capture-button').removeClass('disabled');
+            $('#index-page-message').html('<h4>Tap Capture to start capturing a video.</h4>')
         }
 
         $('#loader-message').html('<h4>'+response.capture_status+'</h4>');
@@ -108,6 +118,14 @@ function renderRetakeSavePage() {
                             '<button class="btn btn-primary" id="save-button"><h3>Save</h3></button>'+
                             '</div>'+
                             '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-1"></div>'+
+                            '<div class="col-md-10">'+
+                            '<h4>&nbsp;</h4>'+
+                            '<h4>Tap Save to save this video or tap Retake to start capturing a new video.'+
+                            '</div>'+
+                            '<div class="col-md-1"></div>'+
+                            '</div>'+
                             '</div>'+
                             '</div>');
 
@@ -129,7 +147,7 @@ function renderAccessCodePage() {
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2>'+
+                            '<h4>&nbsp;</h4>'+
                             '</div>'+
                             '</div>'+
                             '<div class="row">'+
@@ -137,18 +155,18 @@ function renderAccessCodePage() {
                             '<div class="col-md-10">'+
                             '<h4>Please write your access code on the card provided to you and follow the instructions on the back of the card to get a copy of your video.</h4>'+
                             '<h4>&nbsp;</h4>'+
-                            '<h4>Please click Done when you are finished writing your access code.</h4>'+
                             '</div>'+
                             '<div class="col-md-1"></div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2>'+
+                            '<button class="btn btn-primary" id="done-button"><h3>Done</h3></button>'+
                             '</div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<button class="btn btn-primary" id="done-button"><h3>Done</h3></button>'+
+                            '<h4>&nbsp;</h4>'+
+                            '<h4>Tap Done when you are finished writing your access code.</h4>'+
                             '</div>'+
                             '</div>'+
                             '</div>'+
@@ -163,15 +181,15 @@ function renderFinalPage() {
                             '<div class="row">'+
                             '<div class="col-md-1"></div>'+
                             '<div class="col-md-10">'+
-                            '<h4>Your video was successfully uploaded and is ready to be downloaded.<br>Please do not forget to take your card with you.</h4>'+
-                            '<h4>&nbsp;</h4><h4>&nbsp;</h4><h4>&nbsp;</h4>'+
-                            '<h4>Thank you</h4>'+
+                            '<h4>Your video was successfully uploaded and is ready to be downloaded. Do not forget to take your card with you.</h4>'+
+                            '<h4>&nbsp;</h4><h4>&nbsp;</h4>'+
+                            '<h4>Thank you! You can now tap Finish.</h4>'+
                             '</div>'+
                             '<div class="col-md-1"></div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<h2>&nbsp;</h2>'+
+                            '<h4>&nbsp;</h4>'+
                             '</div>'+
                             '</div>'+
                             '<div class="row">'+

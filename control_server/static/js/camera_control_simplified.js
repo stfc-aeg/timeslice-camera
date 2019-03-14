@@ -5,9 +5,11 @@ $(document).ready(renderIndexPage);
 function renderIndexPage() {
     $('#main-section').html('<div class="container-fluid text-center">'+
                             '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<span class="badge" id="system-state"></span>'+
+                            '<div class="col-md-3"></div>'+
+                            '<div class="col-md-6">'+
+                            '<div class="alert mx-auto" id="system-state" role="alert"></div>'+
                             '</div>'+
+                            '<div class="col-md-3"></div>'+
                             '</div>'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
@@ -84,13 +86,15 @@ function pollCameraState() {
 	$.getJSON("/camera_state", function(response) {	     
         // Dynamically updates the system state element
         if(response.system_state == 0) {
-            $('#system-state').removeClass('badge-success').addClass('badge-danger');
-            $('#system-state').html('<h3>Not ready</h3>');
+            $('#system-state').removeClass('alert-success').addClass('alert-danger');
+            $('#system-state').css({"border":"3px solid darkred"});
+            $('#system-state').html('<h3>System not ready</h3>');
             $('#capture-button').addClass('disabled');
             $('#index-page-message').html('<h4>Please wait until the system is ready to be able to capture a video!</h4>')
         } else {
-            $('#system-state').removeClass('badge-danger').addClass('badge-success');
-            $('#system-state').html('<h3>Ready</h3>');
+            $('#system-state').removeClass('alert-danger').addClass('alert-success');
+            $('#system-state').css({"border":"3px solid darkgreen"});
+            $('#system-state').html('<h3>System ready</h3>');
             $('#capture-button').removeClass('disabled');
             $('#index-page-message').html('<h4>Tap Capture to start capturing a video.</h4>')
         }

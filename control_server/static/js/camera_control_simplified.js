@@ -89,13 +89,13 @@ function pollCameraState() {
             $('#system-state').removeClass('alert-success').addClass('alert-danger');
             $('#system-state').css({"border":"3px solid darkred"});
             $('#system-state').html('<h3>System not ready</h3>');
-            $('#capture-button').addClass('disabled');
+            $('#capture-button').prop("disabled", true);
             $('#index-page-message').html('<h4>Please wait until the system is ready to be able to capture a video!</h4>')
         } else {
             $('#system-state').removeClass('alert-danger').addClass('alert-success');
             $('#system-state').css({"border":"3px solid darkgreen"});
             $('#system-state').html('<h3>System ready</h3>');
-            $('#capture-button').removeClass('disabled');
+            $('#capture-button').prop("disabled", false);
             $('#index-page-message').html('<h4>Tap Capture to start capturing a video.</h4>')
         }
 

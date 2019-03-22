@@ -26,7 +26,13 @@ function renderIndexPage() {
                             '</div>'+
                             '</div>');
 
-    $('#capture-button').click(renderCountdownPage);
+    $('#capture-button').click(capture);
+
+    function capture() {
+        // Trigger capture action and render countdown
+        $.post('/capture');
+        renderCountdownPage();
+    }
 }
 
 function renderCountdownPage() {
@@ -34,57 +40,36 @@ function renderCountdownPage() {
                             '<div class="container-fluid text-center">'+
                             '<div class="row">'+
                             '<div class="col-md-12">'+
-                            '<div id="countdown">5</div>'+
+                            '<div id="countdown"></div>'+
                             '</div>'+
                             '</div>'+
                             '</div>'+
-                            '</div>')
-
-    // 5 second countdown timer; countdown element is dynamically updated
-    var timeLeft = 4;
-    var intervalTime = setInterval(function() {
-        document.getElementById('countdown').innerHTML = timeLeft;
-        timeLeft -= 1;
-
-        if(timeLeft < 0) {
-            clearInterval(intervalTime);
-            document.getElementById('countdown').innerHTML = "GO!";
-            setTimeout(capture, 500);
-            setTimeout(renderLoadingPage, 500);
-        }
-    }, 1000);
-
-    function capture() {
-        // Triggers capture action
-        $.post('/capture');
-    }   
+                            '</div>') 
 } 
 
 function renderLoadingPage() {
-    if ($('#countdown').html() == "GO!") {
-        $('#main-section').html('<div class="vertical-center">'+
-                                '<div class="container-fluid text-center">'+
-                                '<div class="row">'+
-                                '<div class="col-md-12">'+
-                                '<div id="loader1" class="loader"></div>'+
-                                '</div>'+
-                                '</div>'+
-                                '<div class="row">'+
-                                '<div class="col-md-4"></div>'+
-                                '<div class="col-md-4">'+
-                                '<div id="loader-message"><h4>&nbsp;</h4></div>'+
-                                '</div>'+
-                                '<div class="col-md-4"></div>'+
-                                '</div>'+
-                                '</div>'+
-                                '</div>');
-    }
+    $('#main-section').html('<div class="vertical-center">'+
+                            '<div class="container-fluid text-center">'+
+                            '<div class="row">'+
+                            '<div class="col-md-12">'+
+                            '<div id="loader1" class="loader"></div>'+
+                            '</div>'+
+                            '</div>'+
+                            '<div class="row">'+
+                            '<div class="col-md-4"></div>'+
+                            '<div class="col-md-4">'+
+                            '<div id="loader-message"><h4>&nbsp;</h4></div>'+
+                            '</div>'+
+                            '<div class="col-md-4"></div>'+
+                            '</div>'+
+                            '</div>'+
+                            '</div>');
 }
 
 function pollCameraState() {
-    // Checks the state of the cameras
+    // Check the state of the cameras
 	$.getJSON("/camera_state", function(response) {	     
-        // Dynamically updates the system state element
+        // Dynamically update the system state element
         if(response.system_state == 0) {
             $('#system-state').removeClass('alert-success').addClass('alert-danger');
             $('#system-state').css({"border":"3px solid darkred"});
@@ -98,13 +83,26 @@ function pollCameraState() {
             $('#capture-button').prop("disabled", false);
             $('#index-page-message').html('<h4>Tap Capture to start capturing a video.</h4>')
         }
+        
+        // Dynamically update countdown count
+        $('#countdown').html(parseInt(response.capture_countdown_count));
+        
+        if(response.capture_countdown_count == 0) {
+            $('#countdown').html('GO!');
+        }
 
+        if ($('#countdown').html() == "GO!") {
+            renderLoadingPage();
+        }
+
+        // Dynamically update loader message
         $('#loader-message').html('<h4>'+response.capture_status+'</h4>');
 
+        // Hide loader if capture state is 0
         if(response.capture_state == 0) {
             $('#loader1').hide();
         }
-
+        
         if(response.render_status == 3) {
             renderRetakeSavePage();
         }

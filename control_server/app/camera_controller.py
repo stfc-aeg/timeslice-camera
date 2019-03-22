@@ -134,6 +134,15 @@ class CameraController(object):
 
         logging.info("State controller started")
 
+        # Set the countdown counter to 5
+        self.capture_countdown_count = 5
+
+        # Set the countdown interval to 1.0
+        self.countdown_interval = 1.0
+
+        # Set the capture countdown callback to be called every 1 second
+        self.capture_countdown = tornado.ioloop.PeriodicCallback(self.capture_countdown_callback, self.countdown_interval * 1000)
+
     def controller_callback(self):
 
         self.handle_configure_state()
@@ -291,6 +300,10 @@ class CameraController(object):
 
         self.camera_enabled = [0] + camera_enable
 
+    def get_capture_countdown_count(self):
+
+        return self.capture_countdown_count
+
     def get_system_state(self):
 
         return self.system_state
@@ -417,6 +430,28 @@ class CameraController(object):
     def get_preview_update(self):
 
         return self.preview_update
+
+    def do_capture_countdown(self):
+        # Set the countdown counter to 5
+        self.capture_countdown_count = 5
+
+        # Launch the capture countdown
+        self.capture_countdown.start()
+
+    def capture_countdown_callback(self):
+        """ Run the capture countdown
+
+            This decrements the countdown counter. The capture action is called and the
+            periodic callback is stopped when the counter reaches 0.
+        """
+
+        logging.info("Capture coundown, count = {}".format(self.capture_countdown_count))
+        self.capture_countdown_count = self.capture_countdown_count - 1
+        
+        if self.capture_countdown_count == 0:
+            logging.info("Capture countdown triggering capture")
+            self.do_capture()
+            self.capture_countdown.stop() 
 
     def do_capture(self):
 

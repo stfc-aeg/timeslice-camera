@@ -23,12 +23,20 @@ class CameraController(object):
     CONFIGURE_STATE_CONFIGURING = 1
     CONFIGURE_STATE_READY       = 2
 
-    CAPTURE_STATE_IDLE        = 0
-    CAPTURE_STATE_CAPTURING   = 2
-    CAPTURE_STATE_CAPTURED    = 3
-    CAPTURE_STATE_RETRIEVING  = 4
-    CAPTURE_STATE_RETRIEVED   = 5
-    CAPTURE_STATE_RENDERING   = 6
+    CAPTURE_STATE_IDLE                  = 0
+    CAPTURE_STATE_CAPTURING             = 1
+    CAPTURE_STATE_CAPTURING_FAILED      = 2
+    CAPTURE_STATE_CAPTURING_COMPLETED   = 3
+
+    RETRIEVE_STATE_IDLE                 = 0
+    RETRIEVE_STATE_RETRIEVING           = 1
+    RETRIEVE_STATE_RETRIEVING_FAILED    = 2
+    RETRIEVE_STATE_RETRIEVING_COMPLETED = 3
+
+    RENDER_STATE_IDLE                  = 0
+    RENDER_STATE_RENDERING             = 1
+    RENDER_STATE_RENDERING_FAILED      = 2
+    RENDER_STATE_RENDERING_COMPLETED   = 3    
 
     RENDER_STATUS_IDLE = 0
     RENDER_STATUS_RENDERING = 1
@@ -69,15 +77,20 @@ class CameraController(object):
             'brightness'    : '50'
         }
 
-        self.camera_capture_state = [CameraController.CAPTURE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
-        self.capture_state = CameraController.CAPTURE_STATE_IDLE
-        self.capture_status = "Idle"
-
         self.camera_configure_state = [CameraController.CONFIGURE_STATE_NOT_READY] * (CameraController.MAX_CAMERAS+1)
         self.configure_state = CameraController.CONFIGURE_STATE_NOT_READY
         self.configure_status = "Not ready"
 
-        self.render_status = CameraController.RENDER_STATUS_IDLE
+        self.camera_capture_state = [CameraController.CAPTURE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
+        self.capture_state = CameraController.CAPTURE_STATE_IDLE
+        self.capture_status = "Capture state idle"
+
+        self.camera_retrieve_state = [CameraController.RETRIEVE_STATE_IDLE] * (CameraController.MAX_CAMERAS+1)
+        self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
+        self.retrieve_status = "Retrieve state idle"
+
+        self.render_state = CameraController.RENDER_STATE_IDLE
+        self.render_status = "Render state idle"
 
         self.configure_time = 0.0
         self.capture_time = 0.0
@@ -147,6 +160,8 @@ class CameraController(object):
 
         self.handle_configure_state()
         self.handle_capture_state()
+        self.handle_retrieve_state()
+        self.handle_render_state()
         self.handle_preview_update()
         self.monitor_camera_state()
 
@@ -173,14 +188,7 @@ class CameraController(object):
                 self.configure_state = CameraController.CONFIGURE_STATE_READY
 
     def handle_capture_state(self):
-
-        # Validate the current capture state and check if any pending captures are running
-
-        if self.capture_state == CameraController.CAPTURE_STATE_IDLE:
-            # Do nothing
-            pass
-
-        elif self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
+        if self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
 
             num_cameras_capturing = self.get_num_enabled_in_state(CameraController.CAPTURE_STATE_CAPTURING, self.camera_capture_state)
             capture_elapsed_time = time.time() - self.capture_time
@@ -189,49 +197,53 @@ class CameraController(object):
                 if capture_elapsed_time > self.capture_timeout_staggered:
                     self.capture_status = "Captured timed out on {} cameras".format(num_cameras_capturing)
                     logging.error(self.capture_status)
-                    self.capture_state = CameraController.CAPTURE_STATE_IDLE
+                    self.capture_state = CameraController.CAPTURE_STATE_CAPTURING_FAILED
             else:
                 self.capture_status = "Camera capture completed OK after {:.3f} secs".format(capture_elapsed_time)
                 logging.info(self.capture_status)
+                self.capture_state = CameraController.CAPTURE_STATE_CAPTURING_COMPLETED
                 self.do_retrieve()
+    
+    def handle_retrieve_state(self):
+        if self.retrieve_state == CameraController.RETRIEVE_STATE_RETRIEVING:
 
-        elif self.capture_state == CameraController.CAPTURE_STATE_RETRIEVING:
-
-            num_cameras_retrieving = self.get_num_enabled_in_state(CameraController.CAPTURE_STATE_RETRIEVING, self.camera_capture_state)
+            self.capture_state = CameraController.CAPTURE_STATE_IDLE
+            num_cameras_retrieving = self.get_num_enabled_in_state(CameraController.RETRIEVE_STATE_RETRIEVING, self.camera_retrieve_state)
             retrieve_elapsed_time = time.time() - self.retrieve_time
             if num_cameras_retrieving > 0:
                 if retrieve_elapsed_time > self.retrieve_timeout:
-                    self.capture_status = "Retrieve timed out on {} cameras".format(num_cameras_retrieving)
-                    logging.error(self.capture_status)
-                    self.capture_state = CameraController.CAPTURE_STATE_IDLE
+                    self.retrieve_status = "Retrieve timed out on {} cameras".format(num_cameras_retrieving)
+                    logging.error(self.retrieve_status)
+                    self.retrieve_state = CameraController.RETRIEVE_STATE_RETRIEVING_FAILED
             else:
-                self.capture_status = "Image retrieve completed OK after {:.3f} secs".format(retrieve_elapsed_time)
-                logging.info(self.capture_status)
+                self.retrieve_status = "Image retrieve completed OK after {:.3f} secs".format(retrieve_elapsed_time)
+                logging.info(self.retrieve_status)
+                self.retrieve_state = CameraController.RETRIEVE_STATE_RETRIEVING_COMPLETED
                 self.do_render()
+    
+    def handle_render_state(self):
+        if self.render_state == CameraController.RENDER_STATE_RENDERING:
 
-        elif self.capture_state == CameraController.CAPTURE_STATE_RENDERING:
-
-            render_state = self.render_process.poll()
+            self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
+            render_state_poll = self.render_process.poll()
             render_elapsed_time = time.time() - self.retrieve_time
 
-            if render_state is None:
+            if render_state_poll is None:
                 if render_elapsed_time > (self.render_timeout * self.render_loop):
-                    self.capture_status = "Timeslice render timed out"
-                    self.capture_state = CameraController.CAPTURE_STATE_IDLE
+                    self.render_status = "Timeslice render timed out"
+                    self.render_state = CameraController.RENDER_STATE_RENDERING_FAILED
             else:
                 (render_stdout, render_stderr) = self.render_process.communicate()
-                if render_state == 0:
+                if render_state_poll == 0:
                     self.last_render_file = self.render_file
-                    self.capture_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
-                    logging.info(self.capture_status)
-                    self.render_status = CameraController.RENDER_STATUS_IDLE
+                    self.render_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
+                    logging.info(self.render_status)
+                    self.render_state = CameraController.RENDER_STATE_RENDERING_COMPLETED
                 else:
-                    self.capture_status = "Timeslice render failed with return code {}".format(render_state)
-                    logging.error(self.capture_status)
+                    self.render_status = "Timeslice render failed with return code {}".format(render_state_poll)
+                    logging.error(self.render_status)
                     logging.error("Render output:\n{}\n{}".format(render_stdout, render_stderr))
-
-                self.capture_state = CameraController.CAPTURE_STATE_IDLE
-                
+                    self.render_state = CameraController.RENDER_STATE_RENDERING_FAILED
 
     def handle_preview_update(self):
 
@@ -339,10 +351,6 @@ class CameraController(object):
     def get_render_path(self):
 
         return self.render_path
-
-    def get_render_status(self):
-        
-        return self.render_status
 
     def get_last_render_file(self):
 
@@ -493,23 +501,23 @@ class CameraController(object):
     def do_retrieve(self):
 
         # Set the capture state to retrieving, set the capture time
-        self.capture_state = CameraController.CAPTURE_STATE_RETRIEVING
+        self.retrieve_state = CameraController.RETRIEVE_STATE_RETRIEVING
         self.retrieve_time = time.time()
-        self.capture_status = "Image retrieve in progress"
+        self.retrieve_status = "Image retrieve in progress"
 
         # Set state of enabled cameras to retrieving
         for camera in range(1, CameraController.MAX_CAMERAS+1):
             if self.camera_enabled[camera]:
-                self.camera_capture_state[camera] = CameraController.CAPTURE_STATE_RETRIEVING
+                self.camera_retrieve_state[camera] = CameraController.RETRIEVE_STATE_RETRIEVING
+                logging.info("camera_retrieve_state = {}".format(self.camera_retrieve_state))
 
         self.control_mcast_client.send("retrieve id=0")
 
     def do_render(self):
 
-        self.render_status = CameraController.RENDER_STATUS_RENDERING
-        self.capture_state = CameraController.CAPTURE_STATE_RENDERING
+        self.render_state = CameraController.RENDER_STATE_RENDERING
         self.render_time = time.time()
-        self.capture_status = "Timeslice render in progress"
+        self.render_status = "Timeslice render in progress"
 
         # Squash file list to ensure files are contiguously numbered
 
@@ -549,7 +557,6 @@ class CameraController(object):
                         self.render_framerate, input_file_pattern, self.render_format_codec[self.render_format], self.render_file)
         logging.info("Launching render process with command: {}".format(render_cmd))
 
-        self.render_status = CameraController.RENDER_STATUS_RENDERING_COMPLETED
         self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
@@ -582,7 +589,7 @@ class CameraController(object):
             elif not did_ack:
                 logging.warning("Camera ID {} responded with no-acknowledge for capture command".format(id))
 
-            self.camera_capture_state[id] = CameraController.CAPTURE_STATE_CAPTURED
+            self.camera_capture_state[id] = CameraController.CAPTURE_STATE_CAPTURING_COMPLETED
 
     def update_camera_configure_state(self, id, did_ack):
 
@@ -602,12 +609,12 @@ class CameraController(object):
         if id < 0 or id > CameraController.MAX_CAMERAS:
             logging.warning("Got camera retrieve response for illegal ID: {}".format(id))
         else:
-            if self.camera_capture_state[id] != CameraController.CAPTURE_STATE_RETRIEVING:
+            if self.camera_retrieve_state[id] != CameraController.RETRIEVE_STATE_RETRIEVING:
                 logging.warning("Got retrieve response for camera ID {} when not in retrieving state".format(id))
             elif not did_ack:
                 logging.warning("Camera ID {} responded with no-acknowledge for retrieve command".format(id))
 
-            self.camera_capture_state[id] = CameraController.CAPTURE_STATE_RETRIEVED
+            self.camera_retrieve_state[id] = CameraController.RETRIEVE_STATE_RETRIEVING_COMPLETED
 
             if image_data is not None and len(image_data) > 0:
                 image_file_name = os.path.join(self.current_image_path, "image_{:03d}.jpg".format(id))

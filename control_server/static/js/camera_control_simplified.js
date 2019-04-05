@@ -1,8 +1,39 @@
+var system_state = 0;
+var capture_state = 0;
+var retrieve_state = 0;
+var render_state = 0;
+
 pollCameraState();
 
-$(document).ready(renderIndexPage);
+function pollCameraState() {
+    // Check the state of the cameras
+	$.getJSON("/camera_state", function(response) {	     
+        
+        // Dynamically update countdown count
+        $('#countdown').html(parseInt(response.capture_countdown_count));
+        
+        system_state = response.system_state;
+        capture_state = response.capture_state;
+        retrieve_state = response.retrieve_state;
+        render_state = response.render_state;
 
-function renderIndexPage() {
+        // Dynamically update loader message
+        $('#loader-message').html('<h4>'+response.capture_status+'</h4>');
+
+        // Hide loader if capture state is 0
+        if(capture_state == 2 || retrieve_state == 2 || render_state == 2) {
+            $('#loader1').addClass('d-none');
+            $('#start-again-button').removeClass('d-none');
+        }
+
+    });
+
+    setTimeout(pollCameraState, 250);
+}
+
+$(document).ready(renderIndexView);
+
+function renderIndexView() {
     $('#main-section').html('<div class="container-fluid text-center">'+
                             '<div class="row">'+
                             '<div class="col-md-3"></div>'+
@@ -20,22 +51,62 @@ function renderIndexPage() {
                             '<div class="col-md-1"></div>'+
                             '<div class="col-md-10">'+
                             '<h4>&nbsp;</h4>'+
-                            '<div id="index-page-message"></div>'+
+                            '<div id="index-view-message"></div>'+
                             '</div>'+
                             '<div class="col-md-1"></div>'+
                             '</div>'+
                             '</div>');
+    
+    if(system_state == 0) {
+        awaitSystemNotReady();
+    } else {
+        awaitSystemReady();
+    }
+
+    function awaitSystemNotReady() {
+        if(system_state == 0) {
+            renderSystemNotReadyView();
+            awaitSystemReady();
+        } else {
+            setTimeout(awaitSystemNotReady, 200);
+        }
+    
+        function renderSystemNotReadyView() {
+            $('#system-state').removeClass('alert-success').addClass('alert-danger');
+            $('#system-state').css({"border":"3px solid darkred"});
+            $('#system-state').html('<h3>System not ready</h3>');
+            $('#capture-button').prop("disabled", true);
+            $('#index-view-message').html('<h4>Please wait until the system is ready to be able to capture a video!</h4>');
+        }
+    }
+    
+    function awaitSystemReady() {
+        if(system_state == 1) {
+            renderSystemReadyView();
+            awaitSystemNotReady();
+        } else {
+            setTimeout(awaitSystemReady, 200);
+        }
+    
+        function renderSystemReadyView() {
+            $('#system-state').removeClass('alert-danger').addClass('alert-success');
+            $('#system-state').css({"border":"3px solid darkgreen"});
+            $('#system-state').html('<h3>System ready</h3>');
+            $('#capture-button').prop("disabled", false);
+            $('#index-view-message').html('<h4>Tap Capture to start capturing a video.</h4>');
+        }
+    }
 
     $('#capture-button').click(capture);
 
     function capture() {
         // Trigger capture action and render countdown
-        $.post('/capture');
-        renderCountdownPage();
+        $.post('/capture_countdown');
+        renderCountdownView();
     }
 }
 
-function renderCountdownPage() {
+function renderCountdownView() {
     $('#main-section').html('<div class="vertical-center">'+
                             '<div class="container-fluid text-center">'+
                             '<div class="row">'+
@@ -44,99 +115,81 @@ function renderCountdownPage() {
                             '</div>'+
                             '</div>'+
                             '</div>'+
-                            '</div>') 
+                            '</div>'); 
+    awaitCaptureCapturing();
 } 
 
-function renderLoadingPage() {
-    $('#main-section').html('<div class="vertical-center">'+
-                            '<div class="container-fluid text-center">'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<div id="loader1" class="loader"></div>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-4"></div>'+
-                            '<div class="col-md-4">'+
-                            '<div id="loader-message"><h4>&nbsp;</h4></div>'+
-                            '</div>'+
-                            '<div class="col-md-4"></div>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>');
+function awaitCaptureCapturing() {
+    if (capture_state != 1) {
+        setTimeout(awaitCaptureCapturing, 200);
+    } else {
+        renderLoadingView();
+    }
+
+    function renderLoadingView() {
+        $('#main-section').html('<div class="vertical-center">'+
+                                '<div class="container-fluid text-center">'+
+                                '<div class="row">'+
+                                '<div class="col-md-12">'+
+                                '<div id="loader1" class="loader"></div>'+
+                                '</div>'+
+                                '</div>'+
+                                '<div class="row">'+
+                                '<div class="col-md-4"></div>'+
+                                '<div class="col-md-4">'+
+                                '<div id="loader-message"><h4>&nbsp;</h4></div>'+
+                                '</div>'+
+                                '<div class="col-md-4"></div>'+
+                                '</div>'+
+                                '<div class="row">'+
+                                '<div class="col-md-12">'+
+                                '<h4>&nbsp;</h4>'+
+                                '<button class="btn btn-primary d-none" id="start-again-button"><h3>Start Again</h3></button>'+
+                                '</div>'+
+                                '</div>'+
+                                '</div>'+
+                                '</div>');
+
+        $('#start-again-button').click(renderIndexView);
+
+        awaitRenderCompleted();          
+    }
 }
 
-function pollCameraState() {
-    // Check the state of the cameras
-	$.getJSON("/camera_state", function(response) {	     
-        // Dynamically update the system state element
-        if(response.system_state == 0) {
-            $('#system-state').removeClass('alert-success').addClass('alert-danger');
-            $('#system-state').css({"border":"3px solid darkred"});
-            $('#system-state').html('<h3>System not ready</h3>');
-            $('#capture-button').prop("disabled", true);
-            $('#index-page-message').html('<h4>Please wait until the system is ready to be able to capture a video!</h4>')
-        } else {
-            $('#system-state').removeClass('alert-danger').addClass('alert-success');
-            $('#system-state').css({"border":"3px solid darkgreen"});
-            $('#system-state').html('<h3>System ready</h3>');
-            $('#capture-button').prop("disabled", false);
-            $('#index-page-message').html('<h4>Tap Capture to start capturing a video.</h4>')
-        }
-        
-        // Dynamically update countdown count
-        $('#countdown').html(parseInt(response.capture_countdown_count));
-        
-        if(response.capture_countdown_count == 0) {
-            $('#countdown').html('GO!');
-        }
+function awaitRenderCompleted() {
+    if (render_state != 3) {
+        setTimeout(awaitRenderCompleted, 200);
+    } else {
+        renderRetakeSaveView();
+    }
 
-        if ($('#countdown').html() == "GO!") {
-            renderLoadingPage();
-        }
+    function renderRetakeSaveView() {
+        $('#main-section').html('<div class="vertical-center">'+
+                                '<div class="container-fluid text-center">'+
+                                '<div class="row">'+
+                                '<div class="col-md-12">'+
+                                '<button class="btn btn-primary" id="retake-button"><h3>Retake</h3></button>'+
+                                '<button class="btn btn-primary" id="save-button"><h3>Save</h3></button>'+
+                                '</div>'+
+                                '</div>'+
+                                '<div class="row">'+
+                                '<div class="col-md-1"></div>'+
+                                '<div class="col-md-10">'+
+                                '<h4>&nbsp;</h4>'+
+                                '<h4>Tap Save to save this video or tap Retake to start capturing a new video.'+
+                                '</div>'+
+                                '<div class="col-md-1"></div>'+
+                                '</div>'+
+                                '</div>'+
+                                '</div>');
 
-        // Dynamically update loader message
-        $('#loader-message').html('<h4>'+response.capture_status+'</h4>');
+    $('#retake-button').click(renderIndexView);
 
-        // Hide loader if capture state is 0
-        if(response.capture_state == 0) {
-            $('#loader1').hide();
-        }
-        
-        if(response.render_status == 3) {
-            renderRetakeSavePage();
-        }
-    });
-
-    setTimeout(pollCameraState, 250);
+    $('#save-button').click(renderAccessCodeView);
+    }
 }
 
-function renderRetakeSavePage() {
-    $('#main-section').html('<div class="vertical-center">'+
-                            '<div class="container-fluid text-center">'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<button class="btn btn-primary" id="retake-button"><h3>Retake</h3></button>'+
-                            '<button class="btn btn-primary" id="save-button"><h3>Save</h3></button>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-1"></div>'+
-                            '<div class="col-md-10">'+
-                            '<h4>&nbsp;</h4>'+
-                            '<h4>Tap Save to save this video or tap Retake to start capturing a new video.'+
-                            '</div>'+
-                            '<div class="col-md-1"></div>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>');
-
-    $('#retake-button').click(renderIndexPage);
-
-    $('#save-button').click(renderAccessCodePage);
-}
-
-function renderAccessCodePage() {
+function renderAccessCodeView() {
     $('#main-section').html('<div class="vertical-center">'+
                             '<div class="container-fluid text-center">'+
                             '<div class="row">'+
@@ -172,12 +225,12 @@ function renderAccessCodePage() {
                             '</div>'+
                             '</div>'+
                             '</div>'+
-                            '</div>')
+                            '</div>');
 
-    $('#done-button').click(renderFinalPage);
+    $('#done-button').click(renderFinalView);
 }
 
-function renderFinalPage() {
+function renderFinalView() {
     $('#main-section').html('<div class="vertical-center">'+
                             '<div class="container-fluid text-center">'+
                             '<div class="row">'+
@@ -200,7 +253,7 @@ function renderFinalPage() {
                             '</div>'+
                             '</div>'+
                             '</div>'+
-                            '</div>') 
+                            '</div>');
 
-    $('#finish-button').click(renderIndexPage);
+    $('#finish-button').click(renderIndexView);
 }

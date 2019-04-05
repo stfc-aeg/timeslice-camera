@@ -150,10 +150,15 @@ function awaitCaptureCapturing() {
                                 '</div>'+
                                 '</div>');
 
-        $('#start-again-button').click(renderIndexView);
+        $('#start-again-button').click(resetStates);
 
         awaitRenderCompleted();          
     }
+}
+
+function resetStates() {
+    $.post('/reset_states');
+    renderIndexView();
 }
 
 function awaitRenderCompleted() {
@@ -183,7 +188,7 @@ function awaitRenderCompleted() {
                                 '</div>'+
                                 '</div>');
 
-    $('#retake-button').click(renderIndexView);
+    $('#retake-button').click(resetStates);
 
     $('#save-button').click(renderAccessCodeView);
     }

@@ -188,6 +188,7 @@ class CameraController(object):
                 self.configure_state = CameraController.CONFIGURE_STATE_READY
 
     def handle_capture_state(self):
+
         if self.capture_state == CameraController.CAPTURE_STATE_CAPTURING:
 
             num_cameras_capturing = self.get_num_enabled_in_state(CameraController.CAPTURE_STATE_CAPTURING, self.camera_capture_state)
@@ -205,8 +206,9 @@ class CameraController(object):
                 self.do_retrieve()
     
     def handle_retrieve_state(self):
-        if self.retrieve_state == CameraController.RETRIEVE_STATE_RETRIEVING:
 
+        if self.retrieve_state == CameraController.RETRIEVE_STATE_RETRIEVING:
+            
             self.capture_state = CameraController.CAPTURE_STATE_IDLE
             num_cameras_retrieving = self.get_num_enabled_in_state(CameraController.RETRIEVE_STATE_RETRIEVING, self.camera_retrieve_state)
             retrieve_elapsed_time = time.time() - self.retrieve_time
@@ -222,6 +224,7 @@ class CameraController(object):
                 self.do_render()
     
     def handle_render_state(self):
+
         if self.render_state == CameraController.RENDER_STATE_RENDERING:
 
             self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
@@ -339,7 +342,7 @@ class CameraController(object):
     def get_capture_status(self):
 
         return self.capture_status
-
+        
     def get_camera_version_info(self):
 
         return self.camera_version_info[1:]
@@ -347,6 +350,14 @@ class CameraController(object):
     def get_preview_image(self):
 
         return self.preview_image
+
+    def get_retrieve_state(self):
+
+        return self.retrieve_state
+
+    def get_render_state(self):
+        
+        return self.render_state
 
     def get_render_path(self):
 
@@ -439,7 +450,16 @@ class CameraController(object):
 
         return self.preview_update
 
+    def reset_state_values(self):
+
+        """ This resets the states to IDLE """
+
+        self.capture_state = CameraController.CAPTURE_STATE_IDLE
+        self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
+        self.render_state = CameraController.RENDER_STATE_IDLE
+
     def do_capture_countdown(self):
+
         # Set the countdown counter to 5
         self.capture_countdown_count = 5
 
@@ -447,10 +467,11 @@ class CameraController(object):
         self.capture_countdown.start()
 
     def capture_countdown_callback(self):
+        
         """ Run the capture countdown
 
             This decrements the countdown counter. The capture action is called and the
-            periodic callback is stopped when the counter reaches 0.
+            periodic callback is stopped, when the counter reaches 0.
         """
 
         logging.info("Capture coundown, count = {}".format(self.capture_countdown_count))

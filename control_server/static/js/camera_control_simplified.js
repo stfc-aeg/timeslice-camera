@@ -8,10 +8,9 @@ pollCameraState();
 function pollCameraState() {
     // Check the state of the cameras
 	$.getJSON("/camera_state", function(response) {	     
-        
         // Dynamically update countdown count
-        $('#countdown').html(parseInt(response.capture_countdown_count));
-        
+        $('#countdown').html(response.capture_countdown_count);
+
         system_state = response.system_state;
         capture_state = response.capture_state;
         retrieve_state = response.retrieve_state;
@@ -23,7 +22,7 @@ function pollCameraState() {
         // Hide loader if capture state is 0
         if(capture_state == 2 || retrieve_state == 2 || render_state == 2) {
             $('#loader1').addClass('d-none');
-            $('#start-again-button').removeClass('d-none');
+            $('#error-view').removeClass('d-none');
         }
 
     });
@@ -34,29 +33,12 @@ function pollCameraState() {
 $(document).ready(renderIndexView);
 
 function renderIndexView() {
-    $('#main-section').html('<div class="container-fluid text-center">'+
-                            '<div class="row">'+
-                            '<div class="col-md-3"></div>'+
-                            '<div class="col-md-6">'+
-                            '<div class="alert mx-auto" id="system-state" role="alert"></div>'+
-                            '</div>'+
-                            '<div class="col-md-3"></div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<button class="btn btn-primary" id="capture-button"><h3>Capture</h3></button>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-1"></div>'+
-                            '<div class="col-md-10">'+
-                            '<h4>&nbsp;</h4>'+
-                            '<div id="index-view-message"></div>'+
-                            '</div>'+
-                            '<div class="col-md-1"></div>'+
-                            '</div>'+
-                            '</div>');
-    
+    $('#error-view').addClass('d-none');
+    $('#loading-view').addClass('d-none');
+    $('#retake-save-view').addClass('d-none');
+    $('#final-view').addClass('d-none');
+    $('#index-view').removeClass('d-none');
+
     if(system_state == 0) {
         awaitSystemNotReady();
     } else {
@@ -107,15 +89,9 @@ function renderIndexView() {
 }
 
 function renderCountdownView() {
-    $('#main-section').html('<div class="vertical-center">'+
-                            '<div class="container-fluid text-center">'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<div id="countdown"></div>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>'); 
+    $('#index-view').addClass('d-none');
+    $('#countdown-view').removeClass('d-none');
+
     awaitCaptureCapturing();
 } 
 
@@ -127,32 +103,12 @@ function awaitCaptureCapturing() {
     }
 
     function renderLoadingView() {
-        $('#main-section').html('<div class="vertical-center">'+
-                                '<div class="container-fluid text-center">'+
-                                '<div class="row">'+
-                                '<div class="col-md-12">'+
-                                '<div id="loader1" class="loader"></div>'+
-                                '</div>'+
-                                '</div>'+
-                                '<div class="row">'+
-                                '<div class="col-md-4"></div>'+
-                                '<div class="col-md-4">'+
-                                '<div id="loader-message"><h4>&nbsp;</h4></div>'+
-                                '</div>'+
-                                '<div class="col-md-4"></div>'+
-                                '</div>'+
-                                '<div class="row">'+
-                                '<div class="col-md-12">'+
-                                '<h4>&nbsp;</h4>'+
-                                '<button class="btn btn-primary d-none" id="start-again-button"><h3>Start Again</h3></button>'+
-                                '</div>'+
-                                '</div>'+
-                                '</div>'+
-                                '</div>');
+        $('#countdown-view').addClass('d-none');
+        $('#loading-view').removeClass('d-none');
+        $('#loader1').removeClass('d-none');
 
         $('#start-again-button').click(resetStates);
-
-        awaitRenderCompleted();          
+        awaitRenderCompleted();
     }
 }
 
@@ -169,96 +125,21 @@ function awaitRenderCompleted() {
     }
 
     function renderRetakeSaveView() {
-        $('#main-section').html('<div class="vertical-center">'+
-                                '<div class="container-fluid text-center">'+
-                                '<div class="row">'+
-                                '<div class="col-md-12">'+
-                                '<button class="btn btn-primary" id="retake-button"><h3>Retake</h3></button>'+
-                                '<button class="btn btn-primary" id="save-button"><h3>Save</h3></button>'+
-                                '</div>'+
-                                '</div>'+
-                                '<div class="row">'+
-                                '<div class="col-md-1"></div>'+
-                                '<div class="col-md-10">'+
-                                '<h4>&nbsp;</h4>'+
-                                '<h4>Tap Save to save this video or tap Retake to start capturing a new video.'+
-                                '</div>'+
-                                '<div class="col-md-1"></div>'+
-                                '</div>'+
-                                '</div>'+
-                                '</div>');
-
-    $('#retake-button').click(resetStates);
-
-    $('#save-button').click(renderAccessCodeView);
+        $('#loading-view').addClass('d-none');
+        $('#retake-save-view').removeClass('d-none');
+        $('#retake-button').click(resetStates);
+        $('#save-button').click(renderAccessCodeView);
     }
 }
 
 function renderAccessCodeView() {
-    $('#main-section').html('<div class="vertical-center">'+
-                            '<div class="container-fluid text-center">'+
-                            '<div class="row">'+
-                            '<div class="col-md-3"></div>'+
-                            '<div class="col-md-6">'+
-                            '<div><h2><b>Your access code is:</b></h2></div>'+
-                            '<span class="badge badge-success" id="access-code"><h3>6701</h3></span>'+
-                            '</div>'+
-                            '<div class="col-md-3"></div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<h4>&nbsp;</h4>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-1"></div>'+
-                            '<div class="col-md-10">'+
-                            '<h4>Please write your access code on the card provided to you and follow the instructions on the back of the card to get a copy of your video.</h4>'+
-                            '<h4>&nbsp;</h4>'+
-                            '</div>'+
-                            '<div class="col-md-1"></div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<button class="btn btn-primary" id="done-button"><h3>Done</h3></button>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<h4>&nbsp;</h4>'+
-                            '<h4>Tap Done when you are finished writing your access code.</h4>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>');
-
+    $('#retake-save-view').addClass('d-none');
+    $('#access-code-view').removeClass('d-none');
     $('#done-button').click(renderFinalView);
 }
 
 function renderFinalView() {
-    $('#main-section').html('<div class="vertical-center">'+
-                            '<div class="container-fluid text-center">'+
-                            '<div class="row">'+
-                            '<div class="col-md-1"></div>'+
-                            '<div class="col-md-10">'+
-                            '<h4>Your video was successfully uploaded and is ready to be downloaded. Do not forget to take your card with you.</h4>'+
-                            '<h4>&nbsp;</h4><h4>&nbsp;</h4>'+
-                            '<h4>Thank you! You can now tap Finish.</h4>'+
-                            '</div>'+
-                            '<div class="col-md-1"></div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<h4>&nbsp;</h4>'+
-                            '</div>'+
-                            '</div>'+
-                            '<div class="row">'+
-                            '<div class="col-md-12">'+
-                            '<button class="btn btn-primary" id="finish-button"><h3>Finish</h3></button>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>'+
-                            '</div>');
-
+    $('#access-code-view').addClass('d-none');
+    $('#final-view').removeClass('d-none');
     $('#finish-button').click(renderIndexView);
 }

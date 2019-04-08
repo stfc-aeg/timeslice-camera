@@ -147,6 +147,9 @@ class CameraController(object):
 
         logging.info("State controller started")
 
+        # Set the countdown state to False (countdown function is not executing)
+        self.countdown_started = False
+
         # Set the countdown counter to 5
         self.capture_countdown_count = 5
 
@@ -342,7 +345,7 @@ class CameraController(object):
     def get_capture_status(self):
 
         return self.capture_status
-        
+
     def get_camera_version_info(self):
 
         return self.camera_version_info[1:]
@@ -452,7 +455,7 @@ class CameraController(object):
 
     def reset_state_values(self):
 
-        """ This resets the states to IDLE """
+        """ This resets the values of the states to 0 """
 
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
         self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
@@ -460,11 +463,16 @@ class CameraController(object):
 
     def do_capture_countdown(self):
 
-        # Set the countdown counter to 5
-        self.capture_countdown_count = 5
-
-        # Launch the capture countdown
-        self.capture_countdown.start()
+        """ Set countdown count to 5 and countdown state to True, and Launch 
+            countdown function if it is not already executing, otherwise do nothing.
+        """
+        
+        if self.countdown_started == False:
+            self.capture_countdown_count = 5
+            self.capture_countdown.start()
+            self.countdown_started = True
+        else:
+            pass
 
     def capture_countdown_callback(self):
         
@@ -481,6 +489,9 @@ class CameraController(object):
             logging.info("Capture countdown triggering capture")
             self.do_capture()
             self.capture_countdown.stop() 
+
+            # Set countdown state to False
+            self.countdown_started = False
 
     def do_capture(self):
 

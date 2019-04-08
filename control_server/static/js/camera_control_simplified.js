@@ -78,14 +78,12 @@ function renderIndexView() {
             $('#index-view-message').html('<h4>Tap Capture to start capturing a video.</h4>');
         }
     }
+}
 
-    $('#capture-button').click(capture);
-
-    function capture() {
-        // Trigger capture action and render countdown
-        $.post('/capture_countdown');
-        renderCountdownView();
-    }
+function capture() {
+    // Trigger capture action and render countdown
+    $.post('/capture_countdown');
+    renderCountdownView();
 }
 
 function renderCountdownView() {
@@ -107,7 +105,6 @@ function awaitCaptureCapturing() {
         $('#loading-view').removeClass('d-none');
         $('#loader1').removeClass('d-none');
 
-        $('#start-again-button').click(resetStates);
         awaitRenderCompleted();
     }
 }
@@ -127,19 +124,15 @@ function awaitRenderCompleted() {
     function renderRetakeSaveView() {
         $('#loading-view').addClass('d-none');
         $('#retake-save-view').removeClass('d-none');
-        $('#retake-button').click(resetStates);
-        $('#save-button').click(renderAccessCodeView);
     }
 }
 
 function renderAccessCodeView() {
     $('#retake-save-view').addClass('d-none');
     $('#access-code-view').removeClass('d-none');
-    $('#done-button').click(renderFinalView);
 }
 
 function renderFinalView() {
     $('#access-code-view').addClass('d-none');
     $('#final-view').removeClass('d-none');
-    $('#finish-button').click(renderIndexView);
 }

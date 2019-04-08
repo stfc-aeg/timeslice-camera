@@ -29,7 +29,7 @@
             </div>
             <div class="row">
               <div class="col-md-12">
-                <button class="btn btn-primary" id="capture-button">
+                <button class="btn btn-primary" id="capture-button" onclick="capture();">
                   <h3>Capture</h3>
                 </button>
               </div>
@@ -70,7 +70,7 @@
             <div class="row">
               <div class="col-md-12">
                 <h4>&nbsp;</h4>
-                <button class="btn btn-primary" id="start-again-button">
+                <button class="btn btn-primary" id="start-again-button" onclick="resetStates();">
                   <h3>Start Again</h3>
                 </button>
               </div>
@@ -79,10 +79,10 @@
           <div id="retake-save-view" class="d-none">
             <div class="row">
               <div class="col-md-12">
-                <button class="btn btn-primary" id="retake-button">
+                <button class="btn btn-primary" id="retake-button" onclick="resetStates();"">
                   <h3>Retake</h3>
                 </button>
-                <button class="btn btn-primary" id="save-button">
+                <button class="btn btn-primary" id="save-button" onclick="renderAccessCodeView();">
                   <h3>Save</h3>
                 </button>
               </div>
@@ -124,7 +124,7 @@
             </div>
             <div class="row">
               <div class="col-md-12">
-                <button class="btn btn-primary" id="done-button">
+                <button class="btn btn-primary" id="done-button" onclick="renderFinalView();">
                   <h3>Done</h3>
                 </button>
               </div>
@@ -154,7 +154,7 @@
             </div>
             <div class="row">
               <div class="col-md-12">
-                <button class="btn btn-primary" id="finish-button">
+                <button class="btn btn-primary" id="finish-button" onclick="renderIndexView();">
                   <h3>Finish</h3>
                 </button>
               </div>

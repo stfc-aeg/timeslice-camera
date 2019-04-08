@@ -32,6 +32,24 @@ function pollCameraState() {
 
 $(document).ready(renderIndexView);
 
+function capture() {
+    // Trigger capture action and render countdown
+    $.post('/capture_countdown');
+    renderCountdownView();
+}
+
+function resetStates() {
+    $.post('/reset_states');
+    renderIndexView();
+}
+
+$('#capture-button').click(capture);
+$('#start-again-button').click(resetStates);
+$('#retake-button').click(resetStates);
+$('#save-button').click(renderAccessCodeView);
+$('#done-button').click(renderFinalView);
+$('#finish-button').click(renderIndexView);
+
 function renderIndexView() {
     $('#error-view').addClass('d-none');
     $('#loading-view').addClass('d-none');
@@ -80,12 +98,6 @@ function renderIndexView() {
     }
 }
 
-function capture() {
-    // Trigger capture action and render countdown
-    $.post('/capture_countdown');
-    renderCountdownView();
-}
-
 function renderCountdownView() {
     $('#index-view').addClass('d-none');
     $('#countdown-view').removeClass('d-none');
@@ -107,11 +119,6 @@ function awaitCaptureCapturing() {
 
         awaitRenderCompleted();
     }
-}
-
-function resetStates() {
-    $.post('/reset_states');
-    renderIndexView();
 }
 
 function awaitRenderCompleted() {

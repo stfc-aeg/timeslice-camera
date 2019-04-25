@@ -4,6 +4,7 @@ html, body {
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
+/* Vertically centers the content on the page*/
 .vertical-center {
     min-height: 100%;
     display: flex;
@@ -25,6 +26,56 @@ html, body {
     font-size: 130px;
 }
 
+#step-progress-bar {
+    margin-bottom: 10%;
+}
+
+.circle-inactive {
+    height: 70px;
+    width: 70px;
+    font-size: 40px;
+    color: white;
+    background-color:#ccc;
+    border-radius: 50%;
+    display: inline-block;
+}
+  
+.circle-in-progress {
+    height: 70px;
+    width: 70px;
+    font-size: 40px;
+    color: white;
+    background-color:#5bc0de;
+    border-radius: 50%;
+    display: inline-block;
+    
+}
+  
+.circle-completed {
+    height: 70px;
+    width: 70px;
+    font-size: 40px;
+    color: white;
+    background-color: #5cb85c;
+    border-radius: 50%;
+    display: inline-block;
+    
+}
+  
+.circle-failed {
+    height: 70px;
+    width: 70px;
+    font-size: 40px;
+    color: white;
+    background-color:#dc3545;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.bar-icons {
+    line-height: 70px;
+}
+
 #loader {
     display: inline-block;
     border: 16px solid #DBDBDB;
@@ -32,11 +83,10 @@ html, body {
     border-top: 16px solid #2ECC71;
     width: 200px;
     height: 200px;
-    margin: 30px;
     animation: spin 1s linear infinite; /* Creates a 1 sec infinite animation; same speed from start to end */
 }
   
-/* Animation code */
+/* Animation code for the loader */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -48,9 +98,4 @@ html, body {
 
 #save-button {
     margin-left: 10%;
-}
-
-#access-code {
-    width: 130px;
-    border: 2px solid black;
 }

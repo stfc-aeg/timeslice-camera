@@ -118,6 +118,7 @@ class CameraStateHandler(tornado.web.RequestHandler):
         response['configure_state'] = self.application.camera_controller.get_configure_state()
         response['configure_status'] = self.application.camera_controller.get_configure_status()
         response['last_render_file'] = self.application.camera_controller.get_last_render_file()
+        response['process_status'] = self.application.camera_controller.get_process_status()
         response['retrieve_state'] = self.application.camera_controller.get_retrieve_state()
         response['render_state'] = self.application.camera_controller.get_render_state()
         response['capture_countdown_count'] = self.application.camera_controller.get_capture_countdown_count()

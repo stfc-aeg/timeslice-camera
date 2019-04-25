@@ -2,26 +2,28 @@ var system_state = 0;
 var capture_state = 0;
 var retrieve_state = 0;
 var render_state = 0;
+var process_status = null;
 
 pollCameraState();
 
 function pollCameraState() {
-    // Check the state of the cameras
+    // Checks the state of the cameras.
 	$.getJSON("/camera_state", function(response) {	     
-        // Dynamically update countdown count
+        // Dynamically updates countdown count.
         $('#countdown').html(response.capture_countdown_count);
 
         system_state = response.system_state;
         capture_state = response.capture_state;
         retrieve_state = response.retrieve_state;
         render_state = response.render_state;
+        process_status = response.process_status;
 
-        // Dynamically update loader message
-        $('#loader-message').html('<h4>'+response.capture_status+'</h4>');
+        // Dynamically updates loader message.
+        $('#loader-message').html('<h4>'+response.process_status+'</h4>');
 
-        // Hide loader if capture state is 0
+        // Hides loader and displays Error view if capture, retrieve or render state equal 0.
         if(capture_state == 2 || retrieve_state == 2 || render_state == 2) {
-            $('#loader1').addClass('d-none');
+            $('#loader').addClass('d-none');
             $('#error-view').removeClass('d-none');
         }
 
@@ -29,16 +31,19 @@ function pollCameraState() {
 
     setTimeout(pollCameraState, 250);
 }
-
+// Calls the 'renderIndexView' function once the page is fully loaded
 $(document).ready(renderIndexView);
 
 function capture() {
-    // Trigger capture action and render countdown
+    // Sends a post request to the '/capture_countdown' URL and calls the 'renderCountdownView' function.
+
     $.post('/capture_countdown');
     renderCountdownView();
 }
 
 function resetStates() {
+    // Sends a post request to the '/reset_states' URL and calls the 'renderIndexView' function.
+
     $.post('/reset_states');
     renderIndexView();
 }
@@ -51,6 +56,8 @@ $('#done-button').click(renderFinalView);
 $('#finish-button').click(renderIndexView);
 
 function renderIndexView() {
+    // Displays the Index view and checks the value of 'system_state' to decide which function to call.
+
     $('#error-view').addClass('d-none');
     $('#loading-view').addClass('d-none');
     $('#retake-save-view').addClass('d-none');
@@ -64,6 +71,11 @@ function renderIndexView() {
     }
 
     function awaitSystemNotReady() {
+        /*
+            Calls the 'renderSystemNotReadyView' and 'awaitSystemReady' functions if the value of 
+            'system_state' is 0 (not ready), otherwise it calls itself again in 0.1 seconds.
+        */
+
         if(system_state == 0) {
             renderSystemNotReadyView();
             awaitSystemReady();
@@ -81,6 +93,11 @@ function renderIndexView() {
     }
     
     function awaitSystemReady() {
+        /*  
+            Calls the 'renderSystemReadyView' and 'awaitSystemNotReady' functions if the value 
+            of 'system_state' is 1 (ready), otherwise it calls itself again in 0.1 seconds.
+        */
+
         if(system_state == 1) {
             renderSystemReadyView();
             awaitSystemNotReady();
@@ -99,6 +116,8 @@ function renderIndexView() {
 }
 
 function renderCountdownView() {
+    // Displays the Countdown view and calls the 'awaitCaptureCapturing' function.
+
     $('#index-view').addClass('d-none');
     $('#countdown-view').removeClass('d-none');
 
@@ -106,6 +125,11 @@ function renderCountdownView() {
 } 
 
 function awaitCaptureCapturing() {
+    /* 
+        Calls the 'renderLoadingView' function if the value of 'capture_state' is 
+        not equal to 1, otherwise it calls itself again in 0.1 seconds.
+    */
+
     if (capture_state != 1) {
         setTimeout(awaitCaptureCapturing, 200);
     } else {
@@ -113,15 +137,22 @@ function awaitCaptureCapturing() {
     }
 
     function renderLoadingView() {
+        // Displays the Loading view and calls the 'awaitRenderCompleted' function.
+
         $('#countdown-view').addClass('d-none');
         $('#loading-view').removeClass('d-none');
-        $('#loader1').removeClass('d-none');
+        $('#loader').removeClass('d-none');
 
         awaitRenderCompleted();
     }
 }
 
 function awaitRenderCompleted() {
+    /* 
+        Calls the 'renderRetakeSaveView' function if the value of 'render_state' 
+        is 3, otherwise it calls itself again in 0.1 seconds.
+    */
+
     if (render_state != 3) {
         setTimeout(awaitRenderCompleted, 200);
     } else {
@@ -129,17 +160,20 @@ function awaitRenderCompleted() {
     }
 
     function renderRetakeSaveView() {
+        // Displays the Retake & Save view.
         $('#loading-view').addClass('d-none');
         $('#retake-save-view').removeClass('d-none');
     }
 }
 
 function renderAccessCodeView() {
+    // Displays the Access Code view
     $('#retake-save-view').addClass('d-none');
     $('#access-code-view').removeClass('d-none');
 }
 
 function renderFinalView() {
+    // Displays the Final view
     $('#access-code-view').addClass('d-none');
     $('#final-view').removeClass('d-none');
 }

@@ -92,6 +92,8 @@ class CameraController(object):
         self.render_state = CameraController.RENDER_STATE_IDLE
         self.render_status = "Render state idle"
 
+        self.process_status = ""
+
         self.configure_time = 0.0
         self.capture_time = 0.0
         self.retrieve_time = 0.0
@@ -198,9 +200,11 @@ class CameraController(object):
             capture_elapsed_time = time.time() - self.capture_time
             if num_cameras_capturing > 0:
                 self.capture_status = "Capture in progress on {} cameras".format(num_cameras_capturing)
+                self.process_status = "The cameras are now capturing"
                 if capture_elapsed_time > self.capture_timeout_staggered:
                     self.capture_status = "Captured timed out on {} cameras".format(num_cameras_capturing)
                     logging.error(self.capture_status)
+                    self.process_status = "An error occurred while the cameras were capturing, please try capturing a video again"
                     self.capture_state = CameraController.CAPTURE_STATE_CAPTURING_FAILED
             else:
                 self.capture_status = "Camera capture completed OK after {:.3f} secs".format(capture_elapsed_time)
@@ -219,6 +223,7 @@ class CameraController(object):
                 if retrieve_elapsed_time > self.retrieve_timeout:
                     self.retrieve_status = "Retrieve timed out on {} cameras".format(num_cameras_retrieving)
                     logging.error(self.retrieve_status)
+                    self.process_status = "An error occurred while retrieving the images, please try capturing a video again"
                     self.retrieve_state = CameraController.RETRIEVE_STATE_RETRIEVING_FAILED
             else:
                 self.retrieve_status = "Image retrieve completed OK after {:.3f} secs".format(retrieve_elapsed_time)
@@ -237,6 +242,7 @@ class CameraController(object):
             if render_state_poll is None:
                 if render_elapsed_time > (self.render_timeout * self.render_loop):
                     self.render_status = "Timeslice render timed out"
+                    self.process_status = "An error occurred while creating your video, please try capturing a video again"
                     self.render_state = CameraController.RENDER_STATE_RENDERING_FAILED
             else:
                 (render_stdout, render_stderr) = self.render_process.communicate()
@@ -345,6 +351,10 @@ class CameraController(object):
     def get_capture_status(self):
 
         return self.capture_status
+
+    def get_process_status(self):
+
+        return self.process_status
 
     def get_camera_version_info(self):
 
@@ -455,7 +465,7 @@ class CameraController(object):
 
     def reset_state_values(self):
 
-        """ This resets the values of the states to 0 """
+        """ Set capture, retrieve and render state to idle (0) """
 
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
         self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
@@ -463,8 +473,8 @@ class CameraController(object):
 
     def do_capture_countdown(self):
 
-        """ Set countdown count to 5 and countdown state to True, and Launch 
-            countdown function if it is not already executing, otherwise do nothing.
+        """ Set the countdown count to 5, launch the countdown and set the countdown state 
+            to True if the countdown has not already been launched, otherwise do nothing.
         """
         
         if self.countdown_started == False:
@@ -476,10 +486,8 @@ class CameraController(object):
 
     def capture_countdown_callback(self):
         
-        """ Run the capture countdown
-
-            This decrements the countdown counter. The capture action is called and the
-            periodic callback is stopped, when the counter reaches 0.
+        """ Decrement the countdown counter, and call the 'self.do_capture' function 
+            and stop the periodic callback when the counter reaches 0.
         """
 
         logging.info("Capture coundown, count = {}".format(self.capture_countdown_count))
@@ -536,6 +544,7 @@ class CameraController(object):
         self.retrieve_state = CameraController.RETRIEVE_STATE_RETRIEVING
         self.retrieve_time = time.time()
         self.retrieve_status = "Image retrieve in progress"
+        self.process_status = "Please wait while I am retrieving the images from the cameras"
 
         # Set state of enabled cameras to retrieving
         for camera in range(1, CameraController.MAX_CAMERAS+1):
@@ -550,6 +559,7 @@ class CameraController(object):
         self.render_state = CameraController.RENDER_STATE_RENDERING
         self.render_time = time.time()
         self.render_status = "Timeslice render in progress"
+        self.process_status = "Images retrieved successfully, I am now creating your video"
 
         # Squash file list to ensure files are contiguously numbered
 

@@ -25,7 +25,7 @@ html, body {
     font-size: 130px;
 }
 
-.loader {
+#loader {
     display: inline-block;
     border: 16px solid #DBDBDB;
     border-radius: 50%; /* Creates a circle */

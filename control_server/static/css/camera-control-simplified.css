@@ -99,3 +99,9 @@ html, body {
 #save-button {
     margin-left: 10%;
 }
+
+#access-code {
+    height: 50px;
+    width: 200px;
+    border: 2px solid black;
+}

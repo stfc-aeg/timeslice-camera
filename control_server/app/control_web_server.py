@@ -24,6 +24,11 @@ class RestartSystemHandler(tornado.web.RequestHandler):
     def post(self):
         self.application.camera_controller.reset_state_values()
 
+class SaveVideoHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        self.application.camera_controller.do_save()
+
 class CaptureCountdownHandler(tornado.web.RequestHandler):
 
     def post(self):
@@ -109,6 +114,7 @@ class CameraStateHandler(tornado.web.RequestHandler):
 
     def get(self):
         response = {}
+        response['access_code'] = self.application.camera_controller.get_access_code()
         response['camera_state'] = self.application.camera_controller.get_camera_state()
         response['camera_enable'] = self.application.camera_controller.get_camera_enable()
         response['system_state'] = self.application.camera_controller.get_system_state()
@@ -180,6 +186,7 @@ class CameraWebServer(object):
             (r"/camera_config", CameraConfigHandler),
             (r"/calibrate", CameraCalibrateHandler),
             (r"/reset_states", RestartSystemHandler),
+            (r"/save_video", SaveVideoHandler),
         ], **settings)
 
 

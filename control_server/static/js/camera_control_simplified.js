@@ -4,6 +4,7 @@ var retrieve_state = 0;
 var render_state = 0;
 var capture_countdown_count = null;
 var process_status = null;
+var access_code = null;
 
 pollCameraState();
 
@@ -20,6 +21,7 @@ function pollCameraState() {
         render_state = response.render_state;
         capture_countdown_count = response.capture_countdown_count;
         process_status = response.process_status;
+        access_code = response.access_code;
     });
 
     setTimeout(pollCameraState, 200);
@@ -42,9 +44,21 @@ function resetStates() {
     displayIndexView();
 }
 
+function saveVideo() {
+    // Sends a post request to the '/save_video' URL and calls the 'displayAccessCodeView' function. 
+
+    $.post('/save_video');
+    displayAccessCodeView();
+}
+
+/* 
+    The '.click' method binds event handlers (functions) to click events. Keep '.click' methods 
+    outside of any functions to prevent event handlers from being bound multiple times.
+*/
+
 $('#capture-button').click(capture);
 $('#start-again-button, #retake-button').click(resetStates);
-$('#save-button').click(displayAccessCodeView);
+$('#save-button').click(saveVideo);
 $('#done-button').click(displayFinalView);
 $('#finish-button').click(displayIndexView);
 
@@ -55,34 +69,34 @@ function displayIndexView() {
     $('#index-view').removeClass('d-none');
 
     /*
-        Calls the 'updateViewNotReady' and 'awaitSystemReady' functions if the value of 'system_state' 
-        is 0 (not ready), othewrise it calls the 'updateViewReady' and 'awaitSystemNotReady' functions.
+        Calls the 'updateViewToNotReady' and 'awaitSystemReady' functions if the value of 'system_state' 
+        is 0 (not ready), othewrise it calls the 'updateViewToReady' and 'awaitSystemNotReady' functions.
     */
 
     if(system_state == 0) {
-        updateViewNotReady();
+        updateViewToNotReady();
         awaitSystemReady();
         
     } else {
-        updateViewReady();
+        updateViewToReady();
         awaitSystemNotReady();
     }
 
     function awaitSystemNotReady() {
         /*
-            Calls the 'updateViewNotReady' and 'awaitSystemReady' functions if the value of 
+            Calls the 'updateViewToNotReady' and 'awaitSystemReady' functions if the value of 
             'system_state' is 0 (not ready), othewrise it calls itself again in 0.1 seconds.
         */
 
          if(system_state == 0) {
-            updateViewNotReady();
+            updateViewToNotReady();
             awaitSystemReady();
         } else {
             setTimeout(awaitSystemNotReady, 100);
         }
     }
 
-    function updateViewNotReady() {
+    function updateViewToNotReady() {
         /*  
             Updates the look of the Index view to make the user aware that the system 
             is not ready, and disables the Capture button so that is not clickable.
@@ -97,19 +111,19 @@ function displayIndexView() {
     
     function awaitSystemReady() {
         /*  
-            Calls the 'updateViewReady' and 'awaitSystemNotReady' functions if the value 
+            Calls the 'updateViewToReady' and 'awaitSystemNotReady' functions if the value 
             of 'system_state' is 1 (ready), othewrise it calls itself again in 0.1 seconds.
         */
 
         if(system_state == 1) {
-            updateViewReady();
+            updateViewToReady();
             awaitSystemNotReady();
         } else {
             setTimeout(awaitSystemReady, 100);
         }
     }
 
-    function updateViewReady() {
+    function updateViewToReady() {
         /*
             Updates the look of the Index view to make the user aware that the system 
             is ready, and enables the Capture button so that it is clickable.
@@ -276,10 +290,29 @@ function displayAccessCodeView() {
         Displays the Access Code view and calls the 'emptyAccessCodeElement' 
         and 'displayAccessCode' functions.
     */
-    $.post('/reset_states');
 
     $('#step-progress-bar, #retake-save-view').addClass('d-none');
     $('#access-code-view').removeClass('d-none');
+    emptyAccessCodeElement();
+    displayAccessCode();
+
+    function emptyAccessCodeElement() {
+        // Empties the content in the '#access-code' element so that users cannot see previous access codes.
+        $('#access-code').html('<h3>&nbsp;</h3>');
+    }
+
+    function displayAccessCode() {
+        /* 
+            Calls itself every 0.2 seconds if the 'access_code' variable is emtpy, otherwise it 
+            takes the string stored in 'access_code' and adds it to the '#access-code' element.
+        */
+
+        if(access_code == "") {
+            setTimeout(displayAccessCode, 200);
+        } else {
+            $('#access-code').html('<h3>'+access_code+'</h3>');
+        }
+    }
 }
 
 function displayFinalView() {

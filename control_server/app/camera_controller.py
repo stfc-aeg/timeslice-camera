@@ -6,6 +6,8 @@ import shlex
 import os
 import glob
 import shutil
+import string
+import random
 
 import camera_response_parser
 
@@ -101,6 +103,7 @@ class CameraController(object):
 
         self.render_path = os.path.join(self.output_path, "renders")
         self.image_path = os.path.join(self.output_path, "temp_image_files")
+        self.saved_video_path = os.path.join(self.output_path, "saved_videos")
         self.current_image_path = self.image_path
         self.render_file = "None"
         self.last_render_file = "None"
@@ -160,6 +163,8 @@ class CameraController(object):
 
         # Set the capture countdown callback to be called every 1 second
         self.capture_countdown = tornado.ioloop.PeriodicCallback(self.capture_countdown_callback, self.countdown_interval * 1000)
+
+        self.access_code = ''
 
     def controller_callback(self):
 
@@ -297,6 +302,10 @@ class CameraController(object):
 
                 self.camera_monitor_loop = self.camera_monitor_loop_ratio
 
+    def get_access_code(self):
+
+        return self.access_code
+    
     def get_num_enabled_in_state(self, desired_state, object_state):
 
         return sum([(enabled and (state == desired_state))
@@ -502,8 +511,11 @@ class CameraController(object):
 
     def do_capture(self):
 
-        # Define the output file location with a timestamped directory within the output path and
-        # create the output directory if necessary
+        # Define the output file location with a timestamped directory within the output path,
+        # create the output directory if necessary and clear existing access code.
+
+        self.access_code = ''
+
         self.render_timestamp = time.strftime("%Y%m%d-%H%M%S")
 
         self.current_image_path = os.path.join(self.image_path, "timeslice_{}".format(self.render_timestamp))
@@ -600,6 +612,21 @@ class CameraController(object):
 
         self.render_process = subprocess.Popen(shlex.split(render_cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+    def do_save(self):
+
+        """ Call the 'self.reset_state_values' function generate an alphanumeric 
+            access code and save the rendered file to the 'saved_videos' folder.
+        """
+
+        self.reset_state_values()
+
+        access_code_length = 6
+        chars = string.ascii_uppercase + string.digits
+        self.access_code = ''.join(random.choice(chars) for _ in range(access_code_length))
+
+        save_render_file_name = os.path.join(self.saved_video_path, "{}.mp4".format(self.access_code))
+        shutil.copy2(self.render_file, save_render_file_name)
+        logging.info("Saved render file as {}.mp4 in save render path {}".format(self.access_code, self.saved_video_path))
 
     def process_camera_response(self, response):
 

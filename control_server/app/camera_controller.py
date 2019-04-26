@@ -138,6 +138,8 @@ class CameraController(object):
         with open(default_preview_file, 'rb') as preview_file:
             self.preview_image = preview_file.read()
 
+        self.preview_video = ''
+
         self.camera_max_ping_age = 4.0
         self.configure_timeout = 5.0
         self.capture_timeout = 5.0
@@ -254,6 +256,7 @@ class CameraController(object):
                     self.render_status = "Timeslice render completed OK after {:.3f} secs".format(render_elapsed_time)
                     logging.info(self.render_status)
                     self.render_state = CameraController.RENDER_STATE_RENDERING_COMPLETED
+                    self.update_preview_video()              
                 else:
                     self.render_status = "Timeslice render failed with return code {}".format(render_state_poll)
                     logging.error(self.render_status)
@@ -371,6 +374,10 @@ class CameraController(object):
 
         return self.preview_image
 
+    def get_preview_video(self):
+
+        return self.preview_video
+
     def get_retrieve_state(self):
 
         return self.retrieve_state
@@ -478,6 +485,7 @@ class CameraController(object):
         self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
         self.render_state = CameraController.RENDER_STATE_IDLE
         self.capture_countdown_count = 5
+        self.preview_video = ''
 
     def do_capture_countdown(self):
 
@@ -695,6 +703,14 @@ class CameraController(object):
 
         self.preview_image_id = id
         self.preview_image = image_data
+
+    def update_preview_video(self):
+        """ Open the rendered file in binary mode and assign its data to 'self.preview_video'. """
+
+        video_file = self.render_file
+        logging.info("video_file = {}".format(video_file))
+        with open(video_file, 'rb') as preview_video_file:
+            self.preview_video = preview_video_file.read()
 
     def do_calibrate(self, camera):
 

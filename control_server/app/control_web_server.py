@@ -76,6 +76,15 @@ class PreviewHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.write(self.application.camera_controller.get_preview_image())
 
+class PreviewVideoHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.set_header("Content-Type", "video/mp4")
+        self.set_header("Pragma", "no-cache")
+        self.set_header("Expires", "Fri, 30 Oct 1998 14:19:41 GMT")
+        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.write(self.application.camera_controller.get_preview_video())
+
 class PreviewConfigHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -187,6 +196,7 @@ class CameraWebServer(object):
             (r"/calibrate", CameraCalibrateHandler),
             (r"/reset_states", RestartSystemHandler),
             (r"/save_video", SaveVideoHandler),
+            (r"/preview_video", PreviewVideoHandler),
         ], **settings)
 
 

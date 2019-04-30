@@ -1,3 +1,9 @@
+/*
+    The user interface "views" are displayed by removing the 'd-none' class from their div, 
+    and are hidden by adding the 'd-none' class to their div. With jQuery, it is possible 
+    to add and remove a class from a div using the '.addClass' and '.removeClass' methods.
+*/
+
 var system_state = 0;
 var capture_state = 0;
 var retrieve_state = 0;
@@ -106,7 +112,7 @@ function displayIndexView() {
         $('#system-state').css({"border":"3px solid darkred"});
         $('#system-state').html('<h3>System not ready</h3>');
         $('#capture-button').prop("disabled", true);
-        $('#index-view-message').html('<h4>Please wait until the system is ready to be able to capture a video!</h4>');
+        $('#index-view-message').html('<h4>Please wait until the system is ready, to be able to capture a video!</h4>');
     }
     
     function awaitSystemReady() {

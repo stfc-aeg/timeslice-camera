@@ -622,14 +622,17 @@ class CameraController(object):
 
     def do_save(self):
 
-        """ Call the 'self.reset_state_values' function generate an alphanumeric 
+        """ Call the 'self.reset_state_values' function, generate an alphanumeric 
             access code and save the rendered file to the 'saved_videos' folder.
+            Exclude 0's and O's from the access code to avoid confusion.
         """
 
         self.reset_state_values()
 
-        access_code_length = 6
+        access_code_length = 7
         chars = string.ascii_uppercase + string.digits
+        chars = ''.join(sorted(set(chars) - set('0O')))
+
         self.access_code = ''.join(random.choice(chars) for _ in range(access_code_length))
 
         save_render_file_name = os.path.join(self.saved_video_path, "{}.mp4".format(self.access_code))

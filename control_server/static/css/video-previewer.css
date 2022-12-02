@@ -1,6 +1,7 @@
 html, body {
     position: relative;
     height: 100%;
+    background-color: #000000;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
@@ -10,3 +11,13 @@ html, body {
     display: flex;
     align-items: center;
 }
+
+/* #preview-video {
+    width: 1280px;
+    height: 960px;
+}
+
+#preview-image {
+    width: 1280px;
+    height: 960px;
+} */

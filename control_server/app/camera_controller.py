@@ -157,8 +157,8 @@ class CameraController(object):
         # Set the countdown state to False (countdown function is not executing)
         self.countdown_started = False
 
-        # Set the countdown counter to 5
-        self.capture_countdown_count = 5
+        # Set the countdown counter to 3
+        self.capture_countdown_count = 3
 
         # Set the countdown interval to 1.0
         self.countdown_interval = 1.0
@@ -484,7 +484,7 @@ class CameraController(object):
         self.capture_state = CameraController.CAPTURE_STATE_IDLE
         self.retrieve_state = CameraController.RETRIEVE_STATE_IDLE
         self.render_state = CameraController.RENDER_STATE_IDLE
-        self.capture_countdown_count = 5
+        self.capture_countdown_count = 3
         self.preview_video = ''
 
     def do_capture_countdown(self):
@@ -494,7 +494,7 @@ class CameraController(object):
         """
         
         if self.countdown_started == False:
-            self.capture_countdown_count = 5
+            self.capture_countdown_count = 3
             self.capture_countdown.start()
             self.countdown_started = True
         else:
@@ -511,16 +511,19 @@ class CameraController(object):
         
         if self.capture_countdown_count == 0:
             logging.info("Capture countdown triggering capture")
-            self.do_capture()
+            self.do_capture(with_delay=True)
             self.capture_countdown.stop() 
 
             # Set countdown state to False
             self.countdown_started = False
 
-    def do_capture(self):
+    def do_capture(self, with_delay=False):
 
         # Define the output file location with a timestamped directory within the output path,
         # create the output directory if necessary and clear existing access code.
+
+        if with_delay:
+            time.sleep(0.30)
 
         self.access_code = ''
 
@@ -555,7 +558,7 @@ class CameraController(object):
         stagger_enable = 1 if self.stagger_enable == True else 0
         self.control_mcast_client.send("capture id=0 stagger_enable={} stagger_offset={}".format(stagger_enable, self.stagger_offset))
 
-        subprocess.Popen(shlex.split("aplay -N /home/pi/develop/projects/timeslice/control_server/static/audio/shutter.wav"))
+        subprocess.Popen(shlex.split("/usr/bin/aplay -N /home/pi/timeslice/control_server/static/audio/shutter.wav"))
 
     def do_retrieve(self):
 

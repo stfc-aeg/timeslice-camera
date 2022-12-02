@@ -158,7 +158,7 @@ function displayCountdownView() {
         */
         $('#countdown').html(capture_countdown_count);
         if (capture_countdown_count != 0) {
-            setTimeout(updateCountdown, 200);
+            setTimeout(updateCountdown, 100);
         }
     }
 } 

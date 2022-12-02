@@ -19,9 +19,9 @@ def main():
     # Define configuration options and add to tornado option parser
     tornado.options.define("mcast_group", default="224.1.1.1", help="Set camera control multicast group address")
     tornado.options.define("mcast_port", default=5007, help="Set camera control multicast port")
-    tornado.options.define("http_addr", default="0.0.0.0", help="Set HTTP server address")
+    tornado.options.define("http_addr", default="127.0.0.1", help="Set HTTP server address")
     tornado.options.define("http_port", default=8888, help="Set HTTP server port")
-    tornado.options.define("ctrl_addr", default="0.0.0.0", help="Set camera control server address")
+    tornado.options.define("ctrl_addr", default="127.0.0.1", help="Set camera control server address")
     tornado.options.define("ctrl_port", default=8008, help="Set camera control server port")
     tornado.options.define("output_path", default="/tmp/timeslice", help="Set the file path for writing output files")
 

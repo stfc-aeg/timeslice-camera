@@ -19,6 +19,21 @@ class CaptureHandler(tornado.web.RequestHandler):
     def post(self):
         self.application.camera_controller.do_capture()
 
+class RestartSystemHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        self.application.camera_controller.reset_state_values()
+
+class SaveVideoHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        self.application.camera_controller.do_save()
+
+class CaptureCountdownHandler(tornado.web.RequestHandler):
+
+    def post(self):
+        self.application.camera_controller.do_capture_countdown()
+
 class CaptureConfigHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -61,6 +76,15 @@ class PreviewHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
         self.write(self.application.camera_controller.get_preview_image())
 
+class PreviewVideoHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.set_header("Content-Type", "video/mp4")
+        self.set_header("Pragma", "no-cache")
+        self.set_header("Expires", "Fri, 30 Oct 1998 14:19:41 GMT")
+        self.set_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.write(self.application.camera_controller.get_preview_video())
+
 class PreviewConfigHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -99,6 +123,7 @@ class CameraStateHandler(tornado.web.RequestHandler):
 
     def get(self):
         response = {}
+        response['access_code'] = self.application.camera_controller.get_access_code()
         response['camera_state'] = self.application.camera_controller.get_camera_state()
         response['camera_enable'] = self.application.camera_controller.get_camera_enable()
         response['system_state'] = self.application.camera_controller.get_system_state()
@@ -108,6 +133,10 @@ class CameraStateHandler(tornado.web.RequestHandler):
         response['configure_state'] = self.application.camera_controller.get_configure_state()
         response['configure_status'] = self.application.camera_controller.get_configure_status()
         response['last_render_file'] = self.application.camera_controller.get_last_render_file()
+        response['process_status'] = self.application.camera_controller.get_process_status()
+        response['retrieve_state'] = self.application.camera_controller.get_retrieve_state()
+        response['render_state'] = self.application.camera_controller.get_render_state()
+        response['capture_countdown_count'] = self.application.camera_controller.get_capture_countdown_count()
 
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(response))
@@ -155,6 +184,7 @@ class CameraWebServer(object):
         self.application = tornado.web.Application([
             (r"/", MainHandler),
             (r"/capture", CaptureHandler),
+            (r"/capture_countdown", CaptureCountdownHandler),
             (r"/capture_config", CaptureConfigHandler),
             (r"/monitor", MonitorHandler),
             (r"/preview", PreviewHandler),
@@ -164,6 +194,9 @@ class CameraWebServer(object):
             (r"/camera_enable", CameraEnableHandler),
             (r"/camera_config", CameraConfigHandler),
             (r"/calibrate", CameraCalibrateHandler),
+            (r"/reset_states", RestartSystemHandler),
+            (r"/save_video", SaveVideoHandler),
+            (r"/preview_video", PreviewVideoHandler),
         ], **settings)
 
 

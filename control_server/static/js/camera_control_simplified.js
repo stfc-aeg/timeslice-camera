@@ -39,8 +39,9 @@ $(document).ready(displayIndexView);
 function capture() {
     // Sends a post request to the '/capture_countdown' URL and calls the 'displayCountdownView' function. 
 
-    $.post('/capture_countdown');
-    displayCountdownView();
+    $.post('/capture_trigger');
+    awaitCaptureCapturing();
+    // displayCountdownView();
 }
 
 function resetStates() {
@@ -154,7 +155,7 @@ function displayCountdownView() {
     function updateCountdown() {
         /* 
             Takes the value of 'capture_countdown_count' and adds it to the '#countdown' element. It 
-            calls itself again in 0.2 seconds if the value of 'capture_countdown_count' is not 0.
+            calls itself again in 0.1 seconds if the value of 'capture_countdown_count' is not 0.
         */
         $('#countdown').html(capture_countdown_count);
         if (capture_countdown_count != 0) {

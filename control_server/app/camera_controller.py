@@ -164,7 +164,8 @@ class CameraController(object):
         self.countdown_interval = 1.0
 
         # Set the capture countdown callback to be called every 1 second
-        self.capture_countdown = tornado.ioloop.PeriodicCallback(self.capture_countdown_callback, self.countdown_interval * 1000)
+        # Removed with the countdown for the capture
+        # self.capture_countdown = tornado.ioloop.PeriodicCallback(self.capture_countdown_callback, self.countdown_interval * 1000)
 
         self.access_code = ''
 
@@ -487,35 +488,37 @@ class CameraController(object):
         self.capture_countdown_count = 3
         self.preview_video = ''
 
-    def do_capture_countdown(self):
+    # def do_capture_countdown(self):
+        # Removed with the countdown for the capture
 
-        """ Set the countdown count to 5, launch the countdown and set the countdown state 
-            to True if the countdown has not already been launched, otherwise do nothing.
-        """
+    #     """ Set the countdown count to 5, launch the countdown and set the countdown state 
+    #         to True if the countdown has not already been launched, otherwise do nothing.
+    #     """
         
-        if self.countdown_started == False:
-            self.capture_countdown_count = 3
-            self.capture_countdown.start()
-            self.countdown_started = True
-        else:
-            pass
+    #     if self.countdown_started == False:
+    #         self.capture_countdown_count = 3
+    #         self.capture_countdown.start()
+    #         self.countdown_started = True
+    #     else:
+    #         pass
 
-    def capture_countdown_callback(self):
+    # def capture_countdown_callback(self):
+        # Removed with the countdown for the capture
+
+    #     """ Decrement the countdown counter, and call the 'self.do_capture' function 
+    #         and stop the periodic callback when the counter reaches 0.
+    #     """
+
+    #     logging.info("Capture coundown, count = {}".format(self.capture_countdown_count))
+    #     self.capture_countdown_count = self.capture_countdown_count - 1
         
-        """ Decrement the countdown counter, and call the 'self.do_capture' function 
-            and stop the periodic callback when the counter reaches 0.
-        """
+    #     if self.capture_countdown_count == 0:
+    #         logging.info("Capture countdown triggering capture")
+    #         self.do_capture(with_delay=True)
+    #         self.capture_countdown.stop() 
 
-        logging.info("Capture coundown, count = {}".format(self.capture_countdown_count))
-        self.capture_countdown_count = self.capture_countdown_count - 1
-        
-        if self.capture_countdown_count == 0:
-            logging.info("Capture countdown triggering capture")
-            self.do_capture(with_delay=True)
-            self.capture_countdown.stop() 
-
-            # Set countdown state to False
-            self.countdown_started = False
+    #         # Set countdown state to False
+    #         self.countdown_started = False
 
     def do_capture(self, with_delay=False):
 

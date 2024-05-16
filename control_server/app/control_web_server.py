@@ -34,6 +34,12 @@ class CaptureCountdownHandler(tornado.web.RequestHandler):
     def post(self):
         self.application.camera_controller.do_capture_countdown()
 
+class CaptureTrigger(tornado.web.RequestHandler):
+
+    def post(self):
+        self.application.camera_controller.do_capture(with_delay=True)
+
+
 class CaptureConfigHandler(tornado.web.RequestHandler):
 
     def get(self):
@@ -184,7 +190,7 @@ class CameraWebServer(object):
         self.application = tornado.web.Application([
             (r"/", MainHandler),
             (r"/capture", CaptureHandler),
-            (r"/capture_countdown", CaptureCountdownHandler),
+            (r"/capture_trigger", CaptureTrigger),
             (r"/capture_config", CaptureConfigHandler),
             (r"/monitor", MonitorHandler),
             (r"/preview", PreviewHandler),

@@ -182,9 +182,8 @@ function awaitCaptureCapturing() {
     */
 
     if (capture_state >= 1) {
-        console.log("SYSTEM STATE IS 1")
+        displayLoadingView()
     } else {
-        console.log("STUCK IN LOOP")
         setTimeout(awaitCaptureCapturing, 100);
     }
 

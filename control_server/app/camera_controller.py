@@ -488,8 +488,6 @@ class CameraController(object):
         self.preview_video = ''
 
     def do_capture_countdown(self):
-        Removed with the countdown for the capture
-
         """ Set the countdown count to 5, launch the countdown and set the countdown state 
             to True if the countdown has not already been launched, otherwise do nothing.
         """

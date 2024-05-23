@@ -11,6 +11,9 @@ var render_state = 0;
 var capture_countdown_count = null;
 var process_status = null;
 var access_code = null;
+var countdown_active = false
+
+document.getElementById("capture-message").textContent = "Capturing"
 
 pollCameraState();
 
@@ -20,7 +23,7 @@ function pollCameraState() {
         and assigns it to different variables before calling itself again in 0.2 seconds.
     */
 
-	$.getJSON("/camera_state", function(response) {	     
+	$.getJSON("/camera_state", function(response) {
         system_state = response.system_state;
         capture_state = response.capture_state;
         retrieve_state = response.retrieve_state;
@@ -39,9 +42,16 @@ $(document).ready(displayIndexView);
 function capture() {
     // Sends a post request to the '/capture_countdown' URL and calls the 'displayCountdownView' function. 
 
-    $.post('/capture_trigger');
-    awaitCaptureCapturing();
-    // displayCountdownView();
+    if (countdown_active) {
+        displayCountdownView();
+        $.post('/capture_countdown')
+    }
+    else {
+        awaitCaptureCapturing();
+        $.post('/capture_trigger');
+        $('#index-view').addClass('d-none');
+        $('#capture-view').removeClass('d-none')
+    }
 }
 
 function resetStates() {
@@ -68,6 +78,7 @@ $('#start-again-button, #retake-button').click(resetStates);
 $('#save-button').click(saveVideo);
 $('#done-button').click(displayFinalView);
 $('#finish-button').click(displayIndexView);
+$('#countdown-active').click(changeCountdown)
 
 function displayIndexView() {
     // Displays the Index view and checks the value of 'system_state' to decide which function(s) to call.
@@ -119,7 +130,7 @@ function displayIndexView() {
     function awaitSystemReady() {
         /*  
             Calls the 'updateViewToReady' and 'awaitSystemNotReady' functions if the value 
-            of 'system_state' is 1 (ready), othewrise it calls itself again in 0.1 seconds.
+            of 'system_state' is 1 (ready), otherwise it calls itself again in 0.1 seconds.
         */
 
         if(system_state == 1) {
@@ -171,15 +182,19 @@ function awaitCaptureCapturing() {
     */
 
     if (capture_state >= 1) {
-        displayLoadingView();
+        console.log("SYSTEM STATE IS 1")
     } else {
+        console.log("STUCK IN LOOP")
         setTimeout(awaitCaptureCapturing, 100);
     }
 
     function displayLoadingView() {
         // Displays the Loading view and calls the 'resetStepProgressBar' and 'updateCaptureCircle' functions.
-
-        $('#countdown-view').addClass('d-none');
+        if (countdown_active) {
+            $('#countdown-view').addClass('d-none');
+        } else {
+            $('capture-view').addClass('d-none')
+        }
         $('#loading-element, #step-progress-bar').removeClass('d-none');
         resetStepProgressBar();
         updateCaptureCircle();
@@ -326,4 +341,8 @@ function displayFinalView() {
     // Displays the Final view.
     $('#access-code-view').addClass('d-none');
     $('#final-view').removeClass('d-none');
+}
+
+function changeCountdown() {
+    countdown_active = !countdown_active
 }
